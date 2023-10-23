@@ -1,49 +1,12 @@
-//
-// * ENGINE-X
-// * SAMPLE GAME
-//
-// + Main.cpp
-// entry point
-//
-
+#include "Core/EngineContext.h"
 #include "Game.h"
-#include "EngineInterface.h"
 
-#include <windows.h>
-
-//-----------------------------------------------------------------
-//-----------------------------------------------------------------
-
-// this is could be better, think design patterns as to why
-MyGame gGame;
-
-//-----------------------------------------------------------------
-//-----------------------------------------------------------------
-
-int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
+int main()
 {
-	// never allow two instances
-	if ( hPrevInstance )
-	{
-		return 0;
-	}
+	const auto engine = std::make_unique<EngineContext>();
+	const auto game = new Game();
 
-	// check version
-	if ( AccessEngineVersion() != kEngineVersion )
-	{
-		return 0;
-	}
-
-	// find the engine
-	exEngineInterface* pEngine = AccessEngine();
-
-	if ( pEngine == nullptr )
-	{
-		return 0;
-	}
-
-	// tell it to run
-	pEngine->Run( &gGame );
+	engine->Run(game);
 
 	return 0;
 }
