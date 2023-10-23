@@ -31,10 +31,11 @@ file(GLOB_RECURSE SOURCES "Source/*")
 source_group(TREE ${PROJECT_SOURCE_DIR}/Source PREFIX "Source Files/" FILES ${SOURCES})
 
 # create .exe 
-add_executable(KittyPong ${PROJECT_SRC_FILES})
+add_executable(KittyPong ${SOURCES})
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT KittyPong)
 
 # ============== ENGINE ==============
+set(MON_DEV_BUILD_GAME OFF)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Lib/MonEngine)
 
 target_link_libraries(
