@@ -24,4 +24,6 @@ public:
 
 private:
 	EngineContext* mEngine = nullptr;
+
+	bool mHasGameStarted = false;
 };

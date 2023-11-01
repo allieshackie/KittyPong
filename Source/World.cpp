@@ -1,170 +1,63 @@
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+
+#include "Entity/EntityRegistry.h"
+#include "Entity/Player.h"
+#include "Entity/Components/AIPlayer.h"
+#include "Entity/Components/COGBounce.h"
+#include "Entity/Components/COGBoxShape.h"
+#include "Entity/Components/COGCircleShape.h"
+#include "Entity/Components/COGCollision.h"
+#include "Entity/Components/COGPhysics.h"
+#include "Entity/Components/COGTransform.h"
+#include "Entity/Systems/ScoreManager.h"
+
 #include "World.h"
-#include "AIPlayer.h"
-#include "COGBounce.h"
-#include "COGPhysics.h"
-#include "COGBoxShape.h"
-#include "COGCircleShape.h"
 
-// create paddle
-GameObject* CreatePaddle(exEngineInterface *pEngine, exVector2 position, exColor color, Input *input)
-{
-	const float fPaddleWidth = 15.0f;
-	const float fPaddleHeight = 50.0f;
-
-	auto pPaddle = new GameObject(pEngine);
-
-	auto pTransform = new COGTransform(pPaddle);
-	// set the position of the paddle
-	exVector2& myPosition = pTransform->GetPosition();
-	myPosition = position;
-	pPaddle->AddComponent(pTransform);
-
-	const auto pBoxShape = new COGBoxShape(pPaddle, fPaddleWidth, fPaddleHeight, color);
-	pPaddle->AddComponent(pBoxShape);
-
-	const auto pPhysics = new COGPhysics(pPaddle, false, {0,0});
-	pPaddle->AddComponent(pPhysics);
-
-	// add user input to paddles default
-	const auto userIn = new UserInput(pPaddle, input);
-	pPaddle->AddComponent(userIn);
-
-	return pPaddle;
-}
-
-// create ball (notice how it will generate events)
-GameObject* CreateBall(exEngineInterface *pEngine, exVector2 position, exColor color)
-{
-	const float fBallRadius = 12.0f;
-
-	auto pBall = new GameObject(pEngine);
-
-	auto pTransform = new COGTransform(pBall);
-	// set the position of the paddle
-	exVector2& myPosition = pTransform->GetPosition();
-	myPosition = position;
-	pBall->AddComponent(pTransform);
-
-	const auto pCircleShape = new COGCircleShape(pBall, fBallRadius, color);
-	pBall->AddComponent(pCircleShape);
-
-	const auto pPhysics = new COGPhysics(pBall, true, {250,150});
-	pBall->AddComponent(pPhysics);
-
-	// attach bounce component
-	const auto pBounce = new COGBounce(pBall);
-	pBall->AddComponent(pBounce);
-
-	return pBall;
-}
-
-// create boundaries for the border of the window
-GameObject* CreateBoundary(exEngineInterface *pEngine, exVector2 size, exVector2 position, exColor color) {
-	auto pBound = new GameObject(pEngine);
-
-	auto pTransform = new COGTransform(pBound);
-	exVector2& myPosition = pTransform->GetPosition();
-	myPosition = position;
-	pBound->AddComponent(pTransform);
-
-	const auto pBoxShape = new COGBoxShape(pBound, size.x, size.y, color);
-	pBound->AddComponent(pBoxShape);
-
-	const auto pPhysics = new COGPhysics(pBound, false, { 0,0 });
-	pBound->AddComponent(pPhysics);
-
-	return pBound;
-}
-
-// sets player 2 after menu choice
-void World::SetPlayer2(int choice) {
-	// if player vs AI is chosen
-	if (choice == 2) {
-		// remove user input component
-		mGameObjects[6]->FindComponent<UserInput>(ComponentType::Input)->Destroy();
-		const auto ai = new AIPlayer(mGameObjects[6]);
-		mGameObjects[6]->AddComponent(ai);
-		// add AI component and give it a reference to the ball
-		mGameObjects[6]->FindComponent<AIPlayer>(ComponentType::AI)->SetBall(mGameObjects[4]);
-	}
-
-	// initialize all game objects
-	InitializeAll();
-
-}
-
-// initialize all game objects after all components are added/removed
-void World::InitializeAll() {
-	for (auto object : mGameObjects) {
-		object->Initialize();
-	}
-}
-
-// create score instance
-void World::CreateScore(exEngineInterface *pEngine, int fontID) {
-	const auto player1 = new Score(mGameObjects[0]);
-	// link score component to left boundary
-	mGameObjects[0]->AddComponent(player1);
-	const auto player2 = new Score(mGameObjects[2]);
-	// link score component to right boundary
-	mGameObjects[2]->AddComponent(player2);
-	// create score manager and link to score components
-	score = new ScoreManager(pEngine, fontID, player1, player2);
-	score->SetBall(mGameObjects[4]);
-}
-
-void World::Create(exEngineInterface *pEngine, int fontID)
-{
-	player1 = new Input();
-	player2 = new Input();
-	// boundaries
-	mGameObjects.push_back(CreateBoundary(pEngine, { 1,600 }, { 0,0 }, { 0,0,0,255 })); // left
-	mGameObjects.push_back(CreateBoundary(pEngine, { 800,1 }, { 0,599 }, { 0,0,0,255 }));
-	mGameObjects.push_back(CreateBoundary(pEngine, { 1,600 }, { 799,0 }, { 0,0,0,255 })); // right
-	mGameObjects.push_back(CreateBoundary(pEngine, { 800,1 }, { 0,0 }, { 0,0,0,255 }));
-
-	// ball and paddles
-	mGameObjects.push_back(CreateBall(pEngine, { 200,200 }, {179,170, 154, 255}));
-	mGameObjects.push_back(CreatePaddle(pEngine, { 0,100 }, {255,229,128,255}, player1));
-	mGameObjects.push_back(CreatePaddle(pEngine, {780,100}, { 255,229,128,255 }, player2));
-
-	CreateScore(pEngine, fontID);
-	
-}
-
-void World::Destroy()
-{
-	for (GameObject* pGameObject : mGameObjects)
-	{
-		delete pGameObject;
-	}
-
-	mGameObjects.clear();
-}
-
-void World::Update(float fDeltaT) const
+void World::Update(const EngineContext& engine, EntityRegistry& registry) const
 {
 	// continually update score
-	score->Update();
-	// run simulation first
-	for (COGPhysics* pPhysics : COGPhysics::mPhysicsComponents)
-	{
-		pPhysics->Update(fDeltaT);
-	}
+	mScoreManager->Update(engine, registry, mPlayer1->GetPlayerId(), mPlayer2->GetPlayerId());
+}
 
-	// then render everything
-	for (COGShape* pShape : COGShape::mShapeComponents)
-	{
-		pShape->Render();
-	}
+void World::SetPlayerAI(EntityRegistry& registry) const
+{
+	const auto id = mPlayer2->GetPlayerId();
+	registry.AddComponent<AIPlayer>(id);
+}
 
-	// update all user input components
-	for (UserInput* input : UserInput::mInputComponents) {
-		input->Update(fDeltaT);
-	}
+void World::Init(EntityRegistry& registry)
+{
+	mPlayer1 = std::make_unique<Player>(registry, glm::vec2{0, 100}, glm::vec3{255, 229, 128}, glm::vec2{1, 600},
+	                                    glm::vec2{799, 0}, glm::vec3{0, 0, 255});
 
-	// update all ai components (only if player2 is Ai)
-	for (AIPlayer *ai : AIPlayer::mAIComponents) {
-		ai->Update(fDeltaT);
-	}
+	mPlayer2 = std::make_unique<Player>(registry, glm::vec2{780, 100}, glm::vec3{255, 229, 128}, glm::vec2{1, 600},
+	                                    glm::vec2{0, 0}, glm::vec3{0, 0, 255});
+	// boundaries
+	const auto boundary1 = registry.CreateEntity();
+	registry.AddComponent<COGTransform>(boundary1, glm::vec2{800, 1});
+	registry.AddComponent<COGBoxShape>(boundary1, 0, 599, glm::vec3{0, 0, 255});
+	registry.AddComponent<COGPhysics>(boundary1, glm::vec2{0, 0});
+	registry.AddComponent<COGCollision>(boundary1);
+
+	const auto boundary2 = registry.CreateEntity();
+	registry.AddComponent<COGTransform>(boundary2, glm::vec2{800, 1});
+	registry.AddComponent<COGBoxShape>(boundary2, 0, 0, glm::vec3{0, 0, 255});
+	registry.AddComponent<COGPhysics>(boundary2, glm::vec2{0, 0});
+	registry.AddComponent<COGCollision>(boundary2);
+
+	auto ball = _CreateBall(registry, {200, 200}, {179, 170, 154});
+	mScoreManager = std::make_unique<ScoreManager>(ball);
+}
+
+
+EntityId World::_CreateBall(EntityRegistry& registry, glm::vec2 position, glm::vec3 color) const
+{
+	const auto ballEntity = registry.CreateEntity();
+	registry.AddComponent<COGTransform>(ballEntity, position);
+	registry.AddComponent<COGCircleShape>(ballEntity, fBallRadius, color);
+	registry.AddComponent<COGPhysics>(ballEntity, glm::vec2{250, 150});
+	registry.AddComponent<COGBounce>(ballEntity);
+
+	return ballEntity;
 }

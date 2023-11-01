@@ -1,31 +1,25 @@
 #pragma once
-#include "GameObject.h"
-#include "COGTransform.h"
-#include "UserInput.h"
-#include "ScoreManager.h"
-#include "EngineInterface.h"
-#include <vector>
 
-// the world, it contains all of our game objects and defines the order of updates
+class EntityRegistry;
+class GameObject;
+class Player;
+class ScoreManager;
+
 class World
 {
 public:
-	void Create(exEngineInterface *pEngine, int fontID);
+	void Init(EntityRegistry& registry);
+	void Update(const EngineContext& engine, EntityRegistry& registry) const;
 
-	void Destroy();
+	void SetPlayerAI(EntityRegistry& registry) const;
 
-	void Update(float fDeltaT) const;
-
-	void InitializeAll();
-
-	void SetPlayer2(int choice);
-
-	void CreateScore(exEngineInterface *pEngine, int fontID);
+private:
+	EntityId _CreateBall(EntityRegistry& registry, glm::vec2 position, glm::vec3 color) const;
 
 	// user input and score manager 
-	Input *player1;
-	Input *player2;
-	ScoreManager *score;
-private:
-	std::vector<GameObject*> mGameObjects;
+	std::unique_ptr<ScoreManager> mScoreManager;
+	std::unique_ptr<Player> mPlayer1;
+	std::unique_ptr<Player> mPlayer2;
+
+	const float fBallRadius = 12.0f;
 };

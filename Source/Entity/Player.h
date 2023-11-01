@@ -1,0 +1,26 @@
+#pragma once
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+
+#include "Entity/EntityRegistry.h"
+
+class Player
+{
+public:
+	Player(EntityRegistry& registry, glm::vec2 paddlePos, glm::vec3 paddleColor, glm::vec2 boundSize,
+	       glm::vec2 boundPos, glm::vec3 boundColor);
+
+	EntityId GetPlayerId() const { return mPlayer; }
+
+private:
+	void _CreatePaddle(EntityRegistry& registry, glm::vec2 position, glm::vec3 color);
+	void _CreateBoundary(EntityRegistry& registry, glm::vec2 size, glm::vec2 position,
+	                     glm::vec3 color);
+
+	EntityId mPlayer;
+	EntityId mPaddle;
+	EntityId mBoundary;
+
+	const float fPaddleWidth = 15.0f;
+	const float fPaddleHeight = 50.0f;
+};

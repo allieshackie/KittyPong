@@ -1,9 +1,12 @@
 #include "Core/EngineContext.h"
+
 #include "Game.h"
 
 void Game::Init(EngineContext* engine)
 {
 	mEngine = engine;
+
+	// TODO: Set inputs for menu
 }
 
 void Game::RegisterEntityDescriptions() const
@@ -13,25 +16,28 @@ void Game::RegisterEntityDescriptions() const
 void Game::Update(float dt) const
 {
 	// if game hasn't started, display main menu
-	/*
-	 *
-	if (!gameStart)
+
+	if (!mHasGameStarted)
 	{
-		const int playerState = world.score->Menu(choice1, choice2, enter);
-		if (playerState != 0)
-		{
-			gameStart = true;
-			// set paddle2 to AI or userInput 
-			world.SetPlayer2(playerState);
-		}
+		/*
+			const int playerState = world.score->Menu(choice1, choice2, enter);
+			if (playerState != 0)
+			{
+				mHasGameStarted = true;
+				// set paddle2 to AI or userInput 
+				world.SetPlayer2(playerState);
+			}
+		 */
 	}
 	else
 	{
+		/*
+		 *
 		// game start, update all user input and world
 		world.player1->Update(wUp, sDown);
 		world.player2->Update(mUp, mDown);
 		world.Update(fDeltaT);
 		//mPhysicsSystem->Update(mTimer->mDT);
+		 */
 	}
-	 */
 }
