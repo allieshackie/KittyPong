@@ -1,27 +1,16 @@
 #pragma once
+#include <glm/vec2.hpp>
 
-#include <EngineTypes.h>
-
-#include "Component.h"
-
-// COGTransform - where we are in space
-class COGTransform : public Component
+class COGTransform
 {
 public:
-
-	COGTransform(GameObject* pGO)
-		: Component(pGO), mPosition({ 0, 0 })
+	COGTransform(glm::vec2 position) : mPosition(position)
 	{
 	}
 
-	virtual ComponentType GetType() const { return ComponentType::Transform; }
-
-	exVector2& GetPosition() { return mPosition; }
-
-	void SetPosition(exVector2 newPos) { mPosition = newPos; }
+	const glm::vec2& GetPosition() const { return mPosition; }
+	void SetPosition(glm::vec2 newPos) { mPosition = newPos; }
 
 private:
-
-	exVector2 mPosition;
-
+	glm::vec2 mPosition = {0, 0};
 };

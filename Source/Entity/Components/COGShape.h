@@ -1,29 +1,25 @@
 #pragma once
-#include <vector>
-#include <EngineTypes.h>
+#include <glm/vec3.hpp>
 
-#include "Component.h"
+class COGTransform;
+class EngineContext;
 
-// COGShape - our baseclass for shapes
-class COGShape : public Component
+class COGShape
 {
 public:
+	COGShape(glm::vec3 pColor)
+		: mColor(pColor)
+	{
+	}
 
-	static std::vector<COGShape*> mShapeComponents;
+	virtual ~COGShape() = default;
 
-public:
+	glm::vec3 GetColor() const { return mColor; }
 
-	COGShape(GameObject* pGO, exColor pColor)
-		: Component(pGO), mColor(pColor) {}
-
-	virtual void Initialize() override;
-
-	virtual void Destroy() override;
-
-	virtual void Render() = 0;
-
-	exColor GetColor() const { return mColor; }
+	virtual void Render(const EngineContext& context, COGTransform& transform)
+	{
+	}
 
 private:
-	exColor mColor;
+	glm::vec3 mColor = {0, 0, 0};
 };

@@ -1,21 +1,15 @@
 #pragma once
 #include "COGShape.h"
-class GameObject;
 
-// COGCircleShape - box
 class COGCircleShape : public COGShape
 {
 public:
-
-	COGCircleShape(GameObject* pGO, float fRadius, exColor pColor);
-
-	virtual ComponentType GetType() const override;
-
-	virtual void Render() override;
+	COGCircleShape(float fRadius, glm::vec3 pColor);
 
 	float GetRadius() const;
 
-private:
+	void Render(const EngineContext& context, COGTransform& transform) override;
 
-	float mRadius;
+private:
+	float mRadius = 0.0f;
 };

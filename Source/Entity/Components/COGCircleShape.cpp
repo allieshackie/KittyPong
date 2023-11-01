@@ -1,25 +1,20 @@
-#include "COGCircleShape.h"
 #include "COGTransform.h"
-#include "GameObject.h"
+#include "Core/EngineContext.h"
+#include "COGCircleShape.h"
 
-COGCircleShape::COGCircleShape(GameObject* pGO, float fRadius, exColor pColor)
-	: COGShape(pGO, pColor)
-	, mRadius(fRadius)
+COGCircleShape::COGCircleShape(float fRadius, glm::vec3 pColor)
+	: COGShape(pColor)
+	  , mRadius(fRadius)
 {
 }
 
-ComponentType COGCircleShape::GetType() const { return ComponentType::CircleShape; }
-
-void COGCircleShape::Render()
+void COGCircleShape::Render(const EngineContext& context, COGTransform& transform)
 {
-	// tell EngineX to draw me
-	auto pTransform = mGO->FindComponent<COGTransform>(ComponentType::Transform);
-
-	// tell EngineX to draw me
-	const exVector2 transform = pTransform->GetPosition();
-	mGO->GetEngine()->DrawCircle(transform, mRadius, GetColor(), 1);
+	const auto& pos = transform.GetPosition();
+	context.DrawCircle(glm::vec3(pos, 1.0f), mRadius, GetColor());
 }
 
-float COGCircleShape::GetRadius() const {
+float COGCircleShape::GetRadius() const
+{
 	return mRadius;
 }

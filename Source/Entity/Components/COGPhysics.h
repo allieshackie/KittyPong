@@ -1,50 +1,25 @@
 #pragma once
-#include <vector>
-#include "IPhysicsCollisionEvent.h"
-#include "Component.h"
-#include "EngineTypes.h"
+#include <glm/vec2.hpp>
 
-class COGTransform;
-class COGBoxShape;
-class COGCircleShape;
-// COGPhysics - lets move around
-class COGPhysics : public Component
+class COGPhysics
 {
 public:
+	COGPhysics(glm::vec2 pVelocity);
 
-	static std::vector<COGPhysics*> mPhysicsComponents;
+	const glm::vec2& GetVelocity() const { return mVelocity; }
+	const glm::vec2& GetNormal() const { return mNormal; }
 
-public:
+	void SetNormal(glm::vec2 normal)
+	{
+		mNormal = normal;
+	}
 
-	COGPhysics(GameObject* pGO, bool bGenerateCollisionEvents, exVector2 pVelocity);
-
-	virtual ComponentType GetType() const override;
-
-	virtual void Initialize() override;
-
-	virtual void Destroy() override;
-
-	virtual void Update(float fDeltaT);
-
-	bool IsColliding(COGPhysics* pOther);
-
-	void AddCollisionEventListener(IPhysicsCollisionEvent* pEvent);
-
-	exVector2& GetVelocity() { return mVelocity; }
-
-	exVector2 GetNormal() const { return normal; }
+	void SetVelocity(glm::vec2 velocity)
+	{
+		mVelocity = velocity;
+	}
 
 private:
-
-	COGTransform* mTransform;
-	COGBoxShape* mBoxShape;
-	COGCircleShape* mCircleShape;
-
-	exVector2 mVelocity;
-
-	exVector2 normal;
-
-	bool mGenerateCollisionEvents;
-	std::vector<IPhysicsCollisionEvent*> mCollisionEventListeners;
-
+	glm::vec2 mVelocity = {0, 0};
+	glm::vec2 mNormal = {0, 0};
 };

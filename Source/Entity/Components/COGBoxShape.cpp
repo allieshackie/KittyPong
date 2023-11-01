@@ -1,29 +1,27 @@
-#include "COGBoxShape.h"
 #include "COGTransform.h"
-#include "GameObject.h"
+#include "Core/EngineContext.h"
 
-COGBoxShape::COGBoxShape(GameObject* pGO, float fWidth, float fHeight, exColor pColor)
-	: COGShape(pGO, pColor)
-	, mWidth(fWidth)
-	, mHeight(fHeight)
+#include "COGBoxShape.h"
+
+COGBoxShape::COGBoxShape(float fWidth, float fHeight, glm::vec3 color)
+	: COGShape(color)
+	  , mWidth(fWidth)
+	  , mHeight(fHeight)
 {
 }
 
-ComponentType COGBoxShape::GetType() const { return ComponentType::BoxShape; }
-
-void COGBoxShape::Render()
+void COGBoxShape::Render(const EngineContext& context, COGTransform& transform)
 {
-	auto pTransform = mGO->FindComponent<COGTransform>(ComponentType::Transform);
-
-	// tell EngineX to draw me
-	const exVector2 transform = pTransform->GetPosition();
-	mGO->GetEngine()->DrawBox(transform, { transform.x + mWidth, transform.y + mHeight }, GetColor(), 1);
+	const auto pos = transform.GetPosition();
+	context.DrawBox(glm::vec3(pos, 1.0f), {pos.x + mWidth, pos.y + mHeight, 1.0f}, GetColor());
 }
 
-float COGBoxShape::GetWidth() const {
+float COGBoxShape::GetWidth() const
+{
 	return mWidth;
 }
 
-float COGBoxShape::GetHeight() const {
+float COGBoxShape::GetHeight() const
+{
 	return mHeight;
 }

@@ -1,20 +1,8 @@
 #pragma once
-#include "COGPhysics.h"
+#include "COGCollision.h"
 
-// COGBounce - where we make the ball bounce
-class COGBounce : public Component, public IPhysicsCollisionEvent
+class COGBounce : public COGCollision
 {
 public:
-
-	COGBounce(GameObject* pGO)
-		: Component(pGO)
-	{
-	}
-
-	virtual ComponentType GetType() const override;
-
-	virtual void Initialize() override;
-
-	virtual void OnCollision(COGPhysics* pMe, COGPhysics* pOther) override;
-
+	COGBounce();
 };
