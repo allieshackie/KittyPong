@@ -9,6 +9,7 @@ project(KittyPongProj)
 set(SOURCE_PROJECT_DIR Source) 
 set(THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/ThirdParty)
 set(BINARY_DIR ${CMAKE_BINARY_DIR}/Binaries)
+include(${CMAKE_CURRENT_SOURCE_DIR}/Lib/MonEngine/cmake/CmakeUtils.cmake)
 
 macro(ADD_DEFINE IDENT)
     add_definitions("-D${IDENT}")
@@ -33,6 +34,19 @@ source_group(TREE ${PROJECT_SOURCE_DIR}/Source PREFIX "Source Files/" FILES ${SO
 # create .exe 
 add_executable(KittyPong ${SOURCES})
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT KittyPong)
+
+copy_data_contents(${CMAKE_CURRENT_SOURCE_DIR}/Data/ ${CMAKE_BINARY_DIR}/Data)
+
+target_precompile_headers(
+    KittyPong 
+    PRIVATE
+    <iostream>
+    <memory>
+    <vector>
+    <fstream>
+    <unordered_map>
+    <functional>
+)
 
 # ============== ENGINE ==============
 set(MON_DEV_BUILD_GAME OFF)
