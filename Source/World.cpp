@@ -71,38 +71,38 @@ void World::SetPlayerAI(EntityRegistry& registry) const
 
 void World::_Menu(const EngineContext& engine) const
 {
-	engine.DrawText2D("KITTY PONG", {300, 10}, {2, 2});
+	engine.DrawText2D("KITTY PONG", {200, 10}, {2, 2});
 
 	if (mInput1)
 	{
 		// highlight left box
-		engine.DrawBox({150, 300, 0.0f}, {350, 350, 1.0f}, {0, 0, 0});
+		engine.DrawBox({-1.8, -0.2, 0.0f}, {2, 1, 1.0f}, {255, 255, 255});
 		// color: {255, 255, 255}
 		engine.DrawText2D("1 VS 1", {200, 310}, {1, 1});
-		engine.DrawBox({450, 300, 0.0f}, {650, 350, 1.0f}, {255, 255, 255});
 		// color: {0, 0, 0}
 		engine.DrawText2D("1 VS AI", {500, 310}, {1, 1});
 	}
 	else if (mInput2)
 	{
 		// highlight right box
-		engine.DrawBox({150, 300, 0.0f}, {350, 350, 1.0f}, {255, 255, 255});
 		// color {0,0,0}
 		engine.DrawText2D("1 VS 1", {200, 310}, {1, 1});
-		engine.DrawBox({450, 300, 0.0f}, {650, 350, 1.0f}, {0, 0, 0});
+		engine.DrawBox({2, -0.2, 0.0f}, {2, 1, 1.0f}, {255, 255, 255});
 		// color {255,255,255}
 		engine.DrawText2D("1 VS AI", {500, 310}, {1, 1});
 	}
 	else
 	{
 		// neither box highlighted
-		engine.DrawBox({150, 300, 0.0f}, {350, 350, 1.0f}, {255, 255, 255});
+		engine.DrawBox({-1.8, -0.2, 0.0f}, {2, 1, 1.0f}, {255, 255, 255});
 		// color {0,0,0}
 		engine.DrawText2D("1 VS 1", {200, 310}, {1, 1});
-		engine.DrawBox({450, 300, 0.0f}, {650, 350, 1.0f}, {255, 255, 255});
+		engine.DrawBox({2, -0.2, 0.0f}, {2, 1, 1.0f}, {255, 255, 255});
 		// color {0,0,0}
 		engine.DrawText2D("1 VS AI", {500, 310}, {1, 1});
 	}
+
+	engine.DrawText2D("Press 1 or 2 to select", {320, 500}, {0.6, 0.6});
 }
 
 EntityId World::_CreateBall(EntityRegistry& registry, glm::vec2 position, glm::vec3 color) const
@@ -146,7 +146,10 @@ void World::_ChooseButton2()
 
 void World::_ChooseButtonEnter()
 {
-	mHasGameStarted = true;
+	if (mInput1 || mInput2)
+	{
+		mHasGameStarted = true;
+	}
 }
 
 // TODO: Haven't implemented alpha for color
