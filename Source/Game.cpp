@@ -1,12 +1,19 @@
 #include "Core/EngineContext.h"
+#include "Entity/Systems/COGCollisionSystem.h"
+#include "Entity/Systems/COGPhysisSystem.h"
 
 #include "Game.h"
 
 void Game::Init(EngineContext* engine)
 {
 	mEngine = engine;
+	mEngine->LoadFont("PixelLettersFull.ttf");
+	mEngine->LoadLevel("kittypong.json");
 
-	// TODO: Set inputs for menu
+	mWorld = std::make_unique<World>(*mEngine, mEngine->GetEntityRegistry());
+
+	mPhysicsSystem = std::make_unique<COGPhysicsSystem>();
+	mCollisionSystem = std::make_unique<COGCollisionSystem>();
 }
 
 void Game::RegisterEntityDescriptions() const
@@ -15,29 +22,15 @@ void Game::RegisterEntityDescriptions() const
 
 void Game::Update(float dt) const
 {
-	// if game hasn't started, display main menu
+	if (mWorld->HasGameStarted())
+	{
+		mPhysicsSystem->Update(dt, mEngine->GetEntityRegistry());
+		mCollisionSystem->Update(mEngine->GetEntityRegistry());
+		mWorld->Update(*mEngine, mEngine->GetEntityRegistry());
+	}
+}
 
-	if (!mHasGameStarted)
-	{
-		/*
-			const int playerState = world.score->Menu(choice1, choice2, enter);
-			if (playerState != 0)
-			{
-				mHasGameStarted = true;
-				// set paddle2 to AI or userInput 
-				world.SetPlayer2(playerState);
-			}
-		 */
-	}
-	else
-	{
-		/*
-		 *
-		// game start, update all user input and world
-		world.player1->Update(wUp, sDown);
-		world.player2->Update(mUp, mDown);
-		world.Update(fDeltaT);
-		//mPhysicsSystem->Update(mTimer->mDT);
-		 */
-	}
+void Game::Render()
+{
+	mWorld->Render(*mEngine);
 }

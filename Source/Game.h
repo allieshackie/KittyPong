@@ -1,6 +1,9 @@
 #pragma once
 
 #include <Core/GameInterface.h>
+#include "Entity/Systems/COGCollisionSystem.h"
+#include "Entity/Systems/COGPhysisSystem.h"
+#include "World.h"
 
 class EngineContext;
 
@@ -20,10 +23,13 @@ public:
 
 	void Init(EngineContext* engine) override;
 	void Update(float dt) const override;
+	void Render() override;
 	void RegisterEntityDescriptions() const override;
 
 private:
 	EngineContext* mEngine = nullptr;
 
-	bool mHasGameStarted = false;
+	std::unique_ptr<World> mWorld;
+	std::unique_ptr<COGPhysicsSystem> mPhysicsSystem;
+	std::unique_ptr<COGCollisionSystem> mCollisionSystem;
 };

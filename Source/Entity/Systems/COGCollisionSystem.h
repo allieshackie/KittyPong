@@ -3,6 +3,7 @@
 
 class COGShape;
 class COGPhysics;
+class COGTransform;
 
 class COGCollisionSystem
 {

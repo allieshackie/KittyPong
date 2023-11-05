@@ -1,4 +1,4 @@
-# Generate Solution -> 'cmake -B ./Solution'
+# Generate Solution -> cmake -B ./Build -DMON_DEV_BUILD_GAME=ON
 cmake_minimum_required(VERSION 3.18.2)
 
 #  ============== PROJECT ================
