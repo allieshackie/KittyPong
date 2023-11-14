@@ -13,7 +13,7 @@ COGBoxShape::COGBoxShape(float fWidth, float fHeight, glm::vec3 color)
 void COGBoxShape::Render(const EngineContext& context, COGTransform& transform)
 {
 	const auto pos = transform.GetPosition();
-	context.DrawBox(glm::vec3(pos, 1.0f), {pos.x + mWidth, pos.y + mHeight, 1.0f}, GetColor());
+	context.DrawBox(glm::vec3(pos, 1.0f), {mWidth, mHeight, 1.0f}, GetColor());
 }
 
 float COGBoxShape::GetWidth() const

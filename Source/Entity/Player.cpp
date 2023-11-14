@@ -7,6 +7,8 @@
 
 #include "Player.h"
 
+#include "Components/COGName.h"
+
 
 Player::Player(EntityRegistry& registry, glm::vec2 paddlePos, glm::vec3 paddleColor, glm::vec2 boundSize,
                glm::vec2 boundPos, glm::vec3 boundColor)
@@ -26,6 +28,7 @@ void Player::_CreatePaddle(EntityRegistry& registry, glm::vec2 position, glm::ve
 	registry.AddComponent<COGBoxShape>(mPaddle, fPaddleWidth, fPaddleHeight, color);
 	registry.AddComponent<COGPhysics>(mPaddle, glm::vec2{0, 0});
 	registry.AddComponent<COGBounce>(mPaddle);
+	registry.AddComponent<COGName>(mPaddle, "Player Paddle");
 }
 
 void Player::_CreateBoundary(EntityRegistry& registry, glm::vec2 size, glm::vec2 position, glm::vec3 color)
@@ -35,6 +38,7 @@ void Player::_CreateBoundary(EntityRegistry& registry, glm::vec2 size, glm::vec2
 	registry.AddComponent<COGBoxShape>(mBoundary, size.x, size.y, color);
 	registry.AddComponent<COGPhysics>(mBoundary, glm::vec2{0, 0});
 	registry.AddComponent<COGCollision>(mBoundary);
+	registry.AddComponent<COGName>(mBoundary, "Player Boundary");
 
 	auto collision = registry.GetComponent<COGCollision>(mBoundary);
 	collision.SetCollisionCallback([this, &registry](COGPhysics& physics)

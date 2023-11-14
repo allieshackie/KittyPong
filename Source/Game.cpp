@@ -9,6 +9,7 @@ void Game::Init(EngineContext* engine)
 	mEngine = engine;
 	mEngine->LoadFont("PixelLettersFull.ttf");
 	mEngine->LoadLevel("kittypong.json");
+	mEngine->SetBackgroundClearColor({0.1f, 0.1f, 0.2f});
 
 	mWorld = std::make_unique<World>(*mEngine, mEngine->GetEntityRegistry());
 
@@ -32,5 +33,5 @@ void Game::Update(float dt) const
 
 void Game::Render()
 {
-	mWorld->Render(*mEngine);
+	mWorld->Render(*mEngine, mEngine->GetEntityRegistry());
 }

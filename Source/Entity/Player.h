@@ -21,6 +21,6 @@ private:
 	EntityId mPaddle;
 	EntityId mBoundary;
 
-	const float fPaddleWidth = 15.0f;
-	const float fPaddleHeight = 50.0f;
+	const float fPaddleWidth = 20.0f;
+	const float fPaddleHeight = 100.0f;
 };

@@ -11,7 +11,7 @@ public:
 	World(const EngineContext& engine, EntityRegistry& registry);
 
 	void Update(const EngineContext& engine, EntityRegistry& registry) const;
-	void Render(const EngineContext& engine);
+	void Render(const EngineContext& engine, EntityRegistry& registry);
 
 	void SetPlayerAI(EntityRegistry& registry) const;
 
@@ -43,7 +43,7 @@ private:
 
 	bool mHasGameStarted = false;
 
-	const float fBallRadius = 12.0f;
-	glm::vec2 mEyePos1 = {370, 282};
-	glm::vec2 mEyePos2 = {428, 282};
+	const float fBallRadius = 10.0f;
+	glm::vec2 mEyePos1 = {-40.0f, 250};
+	glm::vec2 mEyePos2 = {40.0f, 250};
 };

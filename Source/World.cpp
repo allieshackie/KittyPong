@@ -18,12 +18,14 @@
 
 World::World(const EngineContext& engine, EntityRegistry& registry)
 {
-	mPlayer1 = std::make_unique<Player>(registry, glm::vec2{0, 100}, glm::vec3{255, 229, 128}, glm::vec2{1, 600},
-	                                    glm::vec2{799, 0}, glm::vec3{0, 0, 255});
+	mPlayer1 = std::make_unique<Player>(registry, glm::vec2{-390, 100}, glm::vec3{255, 229, 128}, glm::vec2{1, 1200},
+	                                    glm::vec2{400, 0}, glm::vec3{0, 0, 255});
 
-	mPlayer2 = std::make_unique<Player>(registry, glm::vec2{780, 100}, glm::vec3{255, 229, 128}, glm::vec2{1, 600},
-	                                    glm::vec2{0, 0}, glm::vec3{0, 0, 255});
+	mPlayer2 = std::make_unique<Player>(registry, glm::vec2{390, 100}, glm::vec3{255, 229, 128}, glm::vec2{1, 1200},
+	                                    glm::vec2{-399, 0}, glm::vec3{0, 0, 255});
 	// boundaries
+	/*
+	 *
 	const auto boundary1 = registry.CreateEntity();
 	registry.AddComponent<COGTransform>(boundary1, glm::vec2{800, 1});
 	registry.AddComponent<COGBoxShape>(boundary1, 0.0f, 599.0f, glm::vec3{0, 0, 255});
@@ -35,8 +37,9 @@ World::World(const EngineContext& engine, EntityRegistry& registry)
 	registry.AddComponent<COGBoxShape>(boundary2, 0.0f, 0.0f, glm::vec3{0, 0, 255});
 	registry.AddComponent<COGPhysics>(boundary2, glm::vec2{0, 0});
 	registry.AddComponent<COGCollision>(boundary2);
+	 */
 
-	mBall = _CreateBall(registry, {200, 200}, {179, 170, 154});
+	mBall = _CreateBall(registry, {0, 0}, {179, 170, 154});
 	mScoreManager = std::make_unique<ScoreManager>();
 
 	engine.GetInputHandler().RegisterButtonDownHandler(LLGL::Key::Keypad1, [=]() { _ChooseButton1(); });
@@ -51,7 +54,7 @@ void World::Update(const EngineContext& engine, EntityRegistry& registry) const
 }
 
 // TODO: Haven't implemented color for text
-void World::Render(const EngineContext& engine)
+void World::Render(const EngineContext& engine, EntityRegistry& registry)
 {
 	if (!mHasGameStarted)
 	{
@@ -59,6 +62,16 @@ void World::Render(const EngineContext& engine)
 	}
 	else
 	{
+		const auto circleView = registry.GetEnttRegistry().view<COGCircleShape, COGTransform>();
+		circleView.each([&engine](auto& shape, auto& transform)
+		{
+			shape.Render(engine, transform);
+		});
+		const auto boxView = registry.GetEnttRegistry().view<COGBoxShape, COGTransform>();
+		boxView.each([&engine](auto& shape, auto& transform)
+		{
+			shape.Render(engine, transform);
+		});
 		_DrawKitty(engine);
 	}
 }
@@ -73,33 +86,18 @@ void World::_Menu(const EngineContext& engine) const
 {
 	engine.DrawText2D("KITTY PONG", {200, 10}, {2, 2});
 
+	engine.DrawText2D("1 VS 1", {200, 310}, {1, 1});
+	// color: {0, 0, 0}
+	engine.DrawText2D("1 VS AI", {500, 310}, {1, 1});
 	if (mInput1)
 	{
 		// highlight left box
-		engine.DrawBox({-1.8, -0.2, 0.0f}, {2, 1, 1.0f}, {255, 255, 255});
-		// color: {255, 255, 255}
-		engine.DrawText2D("1 VS 1", {200, 310}, {1, 1});
-		// color: {0, 0, 0}
-		engine.DrawText2D("1 VS AI", {500, 310}, {1, 1});
+		engine.DrawBox({-110, -310, 0.0f}, {200, 100, 1.0f}, {1.0f, 1.0f, 1.0f});
 	}
 	else if (mInput2)
 	{
 		// highlight right box
-		// color {0,0,0}
-		engine.DrawText2D("1 VS 1", {200, 310}, {1, 1});
-		engine.DrawBox({2, -0.2, 0.0f}, {2, 1, 1.0f}, {255, 255, 255});
-		// color {255,255,255}
-		engine.DrawText2D("1 VS AI", {500, 310}, {1, 1});
-	}
-	else
-	{
-		// neither box highlighted
-		engine.DrawBox({-1.8, -0.2, 0.0f}, {2, 1, 1.0f}, {255, 255, 255});
-		// color {0,0,0}
-		engine.DrawText2D("1 VS 1", {200, 310}, {1, 1});
-		engine.DrawBox({2, -0.2, 0.0f}, {2, 1, 1.0f}, {255, 255, 255});
-		// color {0,0,0}
-		engine.DrawText2D("1 VS AI", {500, 310}, {1, 1});
+		engine.DrawBox({400, -310, 0.0f}, {230, 100, 1.0f}, {1.0f, 1.0f, 1.0f});
 	}
 
 	engine.DrawText2D("Press 1 or 2 to select", {320, 500}, {0.6, 0.6});
@@ -110,7 +108,7 @@ EntityId World::_CreateBall(EntityRegistry& registry, glm::vec2 position, glm::v
 	const auto ballEntity = registry.CreateEntity();
 	registry.AddComponent<COGTransform>(ballEntity, position);
 	registry.AddComponent<COGCircleShape>(ballEntity, fBallRadius, color);
-	registry.AddComponent<COGPhysics>(ballEntity, glm::vec2{250, 150});
+	registry.AddComponent<COGPhysics>(ballEntity, glm::vec2{50, 50});
 	registry.AddComponent<COGBounce>(ballEntity);
 
 	return ballEntity;
@@ -122,13 +120,13 @@ void World::_DrawMouth(const EngineContext& engine)
 	if (mScoreAnimationTimer > 0)
 	{
 		// display surprised mouth for timer duration after player scores
-		engine.DrawCircle({400, 350, 0.0f}, 6, {0, 0, 0,});
+		engine.DrawCircle({4.00f, 3.50f, 0.0f}, 0.2f, {255, 255, 255});
 		mScoreAnimationTimer--;
 	}
 	else
 	{
-		engine.DrawLine({400, 340, 0.0f}, {385, 350, 0.0f}, {0, 0, 0});
-		engine.DrawLine({400, 340, 0.0f}, {415, 350, 0.0f}, {0, 0, 0});
+		engine.DrawLine({4.00f, 3.40f, 0.0f}, {3.85f, 3.50f, 0.0f}, {255, 255, 255});
+		engine.DrawLine({4.00f, 3.40f, 0.0f}, {4.15f, 3.50f, 0.0f}, {255, 255, 255});
 	}
 }
 
@@ -157,31 +155,31 @@ void World::_DrawKitty(const EngineContext& engine)
 {
 	// head
 	// color alpha 155
-	engine.DrawCircle({400, 300, 0.0f}, 100, {255, 229, 128});
+	engine.DrawCircle({0.0f, 300.0f, 0.0f}, 150.0f, {1.0f, 229, 0.5f});
 
 	//nose
-	engine.DrawCircle({390, 325, 0.0f}, 5, {255, 128, 236});
-	engine.DrawCircle({400, 330, 0.0f}, 9, {255, 128, 236});
-	engine.DrawCircle({410, 325, 0.0f}, 5, {255, 128, 236});
+	engine.DrawCircle({-15.0f, 310.0f, 0.0f}, 10.0f, {1.0f, 0.5f, 0.8f});
+	engine.DrawCircle({0.0f, 300.0f, 0.0f}, 14.0f, {1.0f, 0.5f, 0.8f});
+	engine.DrawCircle({15.0f, 310.0f, 0.0f}, 10.0f, {1.0f, 0.5f, 0.8f});
 
 	_DrawMouth(engine);
 	_DrawEyes(engine);
 
 	//ears 
-	engine.DrawLine({320, 240, 0.0f}, {335, 160, 0.0f}, {0, 0, 0});
-	engine.DrawLine({335, 160, 0.0f}, {360, 210, 0.0f}, {0, 0, 0});
-	engine.DrawLine({420, 210, 0.0f}, {450, 155, 0.0f}, {0, 0, 0});
-	engine.DrawLine({450, 155, 0.0f}, {475, 230, 0.0f}, {0, 0, 0});
+	engine.DrawLine({-100.0, 100.0f, 0.0f}, {-95.0f, 50.0f, 0.0f}, {1.0f, 1.0f, 1.0f});
+	engine.DrawLine({-95.0f, 50.0f, 0.0f}, {-105.0, 100.0f, 0.0f}, {1.0f, 1.0f, 1.0f});
+	engine.DrawLine({4.20f, 2.10f, 0.0f}, {4.50f, 1.55f, 0.0f}, {1.0f, 1.0f, 1.0f});
+	engine.DrawLine({4.50f, 1.55f, 0.0f}, {4.75f, 2.30f, 0.0f}, {1.0f, 1.0f, 1.0f});
 
 	//whiskers left
-	engine.DrawLine({370, 320, 0.0f}, {320, 310, 0.0f}, {0, 0, 0});
-	engine.DrawLine({370, 330, 0.0f}, {320, 340, 0.0f}, {0, 0, 0});
-	engine.DrawLine({372, 345, 0.0f}, {335, 365, 0.0f}, {0, 0, 0});
+	engine.DrawLine({3.70f, 3.20f, 0.0f}, {3.20f, 3.10f, 0.0f}, {1.0f, 1.0f, 1.0f});
+	engine.DrawLine({3.70f, 3.30f, 0.0f}, {3.20f, 3.40f, 0.0f}, {1.0f, 1.0f, 1.0f});
+	engine.DrawLine({3.72f, 3.45f, 0.0f}, {3.35f, 3.65f, 0.0f}, {1.0f, 1.0f, 1.0f});
 
 	// whiskers right
-	engine.DrawLine({430, 320, 0.0f}, {480, 310, 0.0f}, {0, 0, 0});
-	engine.DrawLine({430, 330, 0.0f}, {480, 332, 0.0f}, {0, 0, 0});
-	engine.DrawLine({432, 345, 0.0f}, {470, 360, 0.0f}, {0, 0, 0});
+	engine.DrawLine({4.30f, 3.20f, 0.0f}, {4.80f, 3.10f, 0.0f}, {1.0f, 1.0f, 1.0f});
+	engine.DrawLine({4.30f, 3.30f, 0.0f}, {4.80f, 3.32f, 0.0f}, {1.0f, 1.0f, 1.0f});
+	engine.DrawLine({4.32f, 3.45f, 0.0f}, {4.70f, 3.60f, 0.0f}, {1.0f, 1.0f, 1.0f});
 }
 
 
@@ -190,38 +188,38 @@ void World::_DrawEyes(const EngineContext& engine)
 	// move eye pupils to follow mouse ball
 	const auto& transform = engine.GetEntityRegistry().GetComponent<COGTransform>(mBall);
 	const auto& pos = transform.GetPosition();
-	if (pos.x < 300)
+	if (pos.x < 300.0f)
 	{
 		// ball left of cat
-		mEyePos1.x = 360;
-		mEyePos2.x = 420;
+		mEyePos1.x = -45.0f;
+		mEyePos2.x = 35.0f;
 	}
-	if (pos.x > 500)
+	if (pos.x > 500.0f)
 	{
 		// ball right
-		mEyePos1.x = 380;
-		mEyePos2.x = 435;
+		mEyePos1.x = -35.0f;
+		mEyePos2.x = 45.0f;
 	}
-	if (pos.y < 250)
+	if (pos.y < 250.0f)
 	{
 		// ball up
-		mEyePos1.y = 275;
-		mEyePos2.y = 275;
+		mEyePos1.y = 245.0f;
+		mEyePos2.y = 245.0f;
 	}
-	if (pos.y > 400)
+	if (pos.y > 400.0f)
 	{
 		// ball down
-		mEyePos1.y = 290;
-		mEyePos2.y = 290;
+		mEyePos1.y = 255.0f;
+		mEyePos2.y = 255.0f;
 	}
 	if (pos.x == 200.0f && pos.y == 200.0f)
 	{
-		mEyePos1 = {370, 282};
-		mEyePos2 = {428, 282};
+		mEyePos1 = {-40.0f, 250};
+		mEyePos2 = {40.0f, 250};
 	}
 	//eyes
-	engine.DrawCircle({370, 280, 0.0f}, 15, {255, 255, 255});
-	engine.DrawCircle(glm::vec3(mEyePos1, 0.0f), 6, {0, 0, 0});
-	engine.DrawCircle({428, 280, 0.0f}, 15, {255, 255, 255});
-	engine.DrawCircle(glm::vec3(mEyePos2, 0.0f), 6, {0, 0, 0});
+	engine.DrawCircle({50.0f, 250.0f, 0.0f}, 30.0f, {1.0f, 1.0f, 1.0f});
+	engine.DrawCircle({-50.0f, 250.0f, 0.0f}, 30.0f, {1.0f, 1.0f, 1.0f});
+	engine.DrawCircle(glm::vec3(mEyePos1, 0.0f), 10.0f, {0.0f, 0.0f, 0.0f});
+	engine.DrawCircle(glm::vec3(mEyePos2, 0.0f), 10.0f, {0.0f, 0.0f, 0.0f});
 }

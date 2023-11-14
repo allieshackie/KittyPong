@@ -1,7 +1,8 @@
 #pragma once
 #include "Entity/EntityRegistry.h"
 
-class COGShape;
+class COGBoxShape;
+class COGCircleShape;
 class COGPhysics;
 class COGTransform;
 
@@ -11,6 +12,6 @@ public:
 	void Update(EntityRegistry& entityRegistry) const;
 
 private:
-	bool _CircleBoxCollisionCheck(const COGShape& shape, const COGTransform& transform, COGPhysics& physics,
-	                              const COGShape& otherShape, const COGTransform& otherTransform) const;
+	bool _CircleBoxCollisionCheck(const COGCircleShape& circle, const COGTransform& transform,
+	                              const COGBoxShape& box, const COGTransform& otherTransform) const;
 };

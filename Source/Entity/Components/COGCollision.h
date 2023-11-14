@@ -1,7 +1,6 @@
 #pragma once
 
 #include <functional>
-#include "Entity/EntityRegistry.h"
 
 class COGPhysics;
 
