@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include "LLGL/Key.h"
 
 #include "Entity/EntityRegistry.h"
 
@@ -11,6 +12,8 @@ public:
 	       glm::vec2 boundPos, glm::vec3 boundColor);
 
 	EntityId GetPlayerId() const { return mPlayer; }
+
+	void SetUserInputs(const EngineContext& context, EntityRegistry& registry, LLGL::Key up, LLGL::Key down) const;
 
 private:
 	void _CreatePaddle(EntityRegistry& registry, glm::vec2 position, glm::vec3 color);
@@ -23,4 +26,6 @@ private:
 
 	const float fPaddleWidth = 20.0f;
 	const float fPaddleHeight = 100.0f;
+
+	const float fMovementSpeed = 100.0f;
 };

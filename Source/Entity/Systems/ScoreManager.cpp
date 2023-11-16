@@ -11,8 +11,8 @@ bool ScoreManager::Update(const EngineContext& engine, EntityRegistry& entityReg
 {
 	// color {100, 0, 0, 255}
 	engine.DrawText2D("KITTY PONG", {300, 10}, {1, 1}); // display header
-	auto score1 = entityRegistry.GetComponent<Score>(player1);
-	auto score2 = entityRegistry.GetComponent<Score>(player2);
+	auto& score1 = entityRegistry.GetComponent<Score>(player1);
+	auto& score2 = entityRegistry.GetComponent<Score>(player2);
 	const std::string sc1 = std::to_string(score1.GetScore());
 	const std::string sc2 = std::to_string(score2.GetScore());
 	engine.DrawText2D(sc1.c_str(), {350, 45}, {1, 1}); // display scores  

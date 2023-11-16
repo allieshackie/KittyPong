@@ -2,21 +2,18 @@
 
 #include "COGBounce.h"
 
-COGBounce::COGBounce()
-{
-	SetCollisionCallback([](COGPhysics& physics)
+COGBounce::COGBounce() : COGCollision(
+	[](COGPhysics& physics, COGPhysics& otherPhysics, int mask)
 	{
-		const auto& normal = physics.GetNormal();
-		const auto& velocity = physics.GetVelocity();
-		// reflect on x if normal is opposite of velocity
-		if (normal.x > 0 && velocity.x < 0 || normal.x < 0 && velocity.x > 0)
-		{
-			physics.SetVelocity({-velocity.x, velocity.y});
-		}
-		// reflect on y if normal is opposite of velocity
-		if (normal.y > 0 && velocity.y < 0 || normal.y < 0 && velocity.y > 0)
-		{
-			physics.SetVelocity({velocity.x, -velocity.y});
-		}
-	});
+		const float dotProduct = physics.GetVelocity().x * otherPhysics.GetNormal().x + physics.GetVelocity().y *
+			otherPhysics
+			.GetNormal().y;
+
+		// Reflect the velocity using the formula: v' = v - 2 * (v dot n) * n
+		physics.SetVelocity({
+			physics.GetVelocity().x - 2.0f * dotProduct * otherPhysics.GetNormal().x,
+			physics.GetVelocity().y - 2.0f * dotProduct * otherPhysics.GetNormal().y
+		});
+	}, static_cast<int>(CollisionMask::Ball), static_cast<int>(CollisionMask::All))
+{
 }

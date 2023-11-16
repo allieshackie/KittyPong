@@ -11,7 +11,11 @@ void COGPhysicsSystem::Update(float deltaTime, EntityRegistry& entityRegistry) c
 		// integrate velocity
 		auto& pos = transform.GetPosition();
 		auto& velocity = physics.GetVelocity();
+		float friction = physics.GetFriction();
 
-		transform.SetPosition({pos.x + velocity.x * deltaTime, pos.y + velocity.y * deltaTime});
+		glm::vec2 newVelocity = velocity * friction;
+		physics.SetVelocity(newVelocity);
+
+		transform.SetPosition({pos.x + newVelocity.x * deltaTime, pos.y + newVelocity.y * deltaTime});
 	});
 }

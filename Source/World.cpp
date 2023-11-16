@@ -1,5 +1,6 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include "LLGL/Key.h"
 
 #include "Core/EngineContext.h"
 #include "Entity/EntityRegistry.h"
@@ -12,39 +13,19 @@
 #include "Entity/Components/COGPhysics.h"
 #include "Entity/Components/COGTransform.h"
 #include "Entity/Systems/ScoreManager.h"
-#include "LLGL/Key.h"
 
 #include "World.h"
 
 World::World(const EngineContext& engine, EntityRegistry& registry)
 {
-	mPlayer1 = std::make_unique<Player>(registry, glm::vec2{-390, 100}, glm::vec3{255, 229, 128}, glm::vec2{1, 1200},
-	                                    glm::vec2{400, 0}, glm::vec3{0, 0, 255});
-
-	mPlayer2 = std::make_unique<Player>(registry, glm::vec2{390, 100}, glm::vec3{255, 229, 128}, glm::vec2{1, 1200},
-	                                    glm::vec2{-399, 0}, glm::vec3{0, 0, 255});
-	// boundaries
-	/*
-	 *
-	const auto boundary1 = registry.CreateEntity();
-	registry.AddComponent<COGTransform>(boundary1, glm::vec2{800, 1});
-	registry.AddComponent<COGBoxShape>(boundary1, 0.0f, 599.0f, glm::vec3{0, 0, 255});
-	registry.AddComponent<COGPhysics>(boundary1, glm::vec2{0, 0});
-	registry.AddComponent<COGCollision>(boundary1);
-
-	const auto boundary2 = registry.CreateEntity();
-	registry.AddComponent<COGTransform>(boundary2, glm::vec2{800, 1});
-	registry.AddComponent<COGBoxShape>(boundary2, 0.0f, 0.0f, glm::vec3{0, 0, 255});
-	registry.AddComponent<COGPhysics>(boundary2, glm::vec2{0, 0});
-	registry.AddComponent<COGCollision>(boundary2);
-	 */
-
-	mBall = _CreateBall(registry, {0, 0}, {179, 170, 154});
-	mScoreManager = std::make_unique<ScoreManager>();
-
 	engine.GetInputHandler().RegisterButtonDownHandler(LLGL::Key::Keypad1, [=]() { _ChooseButton1(); });
 	engine.GetInputHandler().RegisterButtonDownHandler(LLGL::Key::Keypad2, [=]() { _ChooseButton2(); });
-	engine.GetInputHandler().RegisterButtonDownHandler(LLGL::Key::Return, [=]() { _ChooseButtonEnter(); });
+	engine.GetInputHandler().RegisterButtonDownHandler(LLGL::Key::Return,
+	                                                   [=, &engine, &registry]()
+	                                                   {
+		                                                   _ChooseButtonEnter();
+		                                                   _InitGameplayEntities(engine, registry);
+	                                                   });
 }
 
 void World::Update(const EngineContext& engine, EntityRegistry& registry) const
@@ -54,7 +35,7 @@ void World::Update(const EngineContext& engine, EntityRegistry& registry) const
 }
 
 // TODO: Haven't implemented color for text
-void World::Render(const EngineContext& engine, EntityRegistry& registry)
+void World::Render(const EngineContext& engine, EntityRegistry& registry) const
 {
 	if (!mHasGameStarted)
 	{
@@ -72,7 +53,8 @@ void World::Render(const EngineContext& engine, EntityRegistry& registry)
 		{
 			shape.Render(engine, transform);
 		});
-		_DrawKitty(engine);
+
+		//_DrawKitty(engine);
 	}
 }
 
@@ -92,98 +74,18 @@ void World::_Menu(const EngineContext& engine) const
 	if (mInput1)
 	{
 		// highlight left box
-		engine.DrawBox({-110, -310, 0.0f}, {200, 100, 1.0f}, {1.0f, 1.0f, 1.0f});
+		engine.DrawBox({-210, -350, 0.0f}, {200, 100, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, false);
 	}
 	else if (mInput2)
 	{
 		// highlight right box
-		engine.DrawBox({400, -310, 0.0f}, {230, 100, 1.0f}, {1.0f, 1.0f, 1.0f});
+		engine.DrawBox({290, -350, 0.0f}, {230, 100, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, false);
 	}
 
 	engine.DrawText2D("Press 1 or 2 to select", {320, 500}, {0.6, 0.6});
 }
 
-EntityId World::_CreateBall(EntityRegistry& registry, glm::vec2 position, glm::vec3 color) const
-{
-	const auto ballEntity = registry.CreateEntity();
-	registry.AddComponent<COGTransform>(ballEntity, position);
-	registry.AddComponent<COGCircleShape>(ballEntity, fBallRadius, color);
-	registry.AddComponent<COGPhysics>(ballEntity, glm::vec2{50, 50});
-	registry.AddComponent<COGBounce>(ballEntity);
-
-	return ballEntity;
-}
-
-void World::_DrawMouth(const EngineContext& engine)
-{
-	//mouth
-	if (mScoreAnimationTimer > 0)
-	{
-		// display surprised mouth for timer duration after player scores
-		engine.DrawCircle({4.00f, 3.50f, 0.0f}, 0.2f, {255, 255, 255});
-		mScoreAnimationTimer--;
-	}
-	else
-	{
-		engine.DrawLine({4.00f, 3.40f, 0.0f}, {3.85f, 3.50f, 0.0f}, {255, 255, 255});
-		engine.DrawLine({4.00f, 3.40f, 0.0f}, {4.15f, 3.50f, 0.0f}, {255, 255, 255});
-	}
-}
-
-void World::_ChooseButton1()
-{
-	mInput1 = true;
-	mInput2 = false;
-}
-
-void World::_ChooseButton2()
-{
-	mInput1 = false;
-	mInput2 = true;
-}
-
-void World::_ChooseButtonEnter()
-{
-	if (mInput1 || mInput2)
-	{
-		mHasGameStarted = true;
-	}
-}
-
-// TODO: Haven't implemented alpha for color
-void World::_DrawKitty(const EngineContext& engine)
-{
-	// head
-	// color alpha 155
-	engine.DrawCircle({0.0f, 300.0f, 0.0f}, 150.0f, {1.0f, 229, 0.5f});
-
-	//nose
-	engine.DrawCircle({-15.0f, 310.0f, 0.0f}, 10.0f, {1.0f, 0.5f, 0.8f});
-	engine.DrawCircle({0.0f, 300.0f, 0.0f}, 14.0f, {1.0f, 0.5f, 0.8f});
-	engine.DrawCircle({15.0f, 310.0f, 0.0f}, 10.0f, {1.0f, 0.5f, 0.8f});
-
-	_DrawMouth(engine);
-	_DrawEyes(engine);
-
-	//ears 
-	engine.DrawLine({-100.0, 100.0f, 0.0f}, {-95.0f, 50.0f, 0.0f}, {1.0f, 1.0f, 1.0f});
-	engine.DrawLine({-95.0f, 50.0f, 0.0f}, {-105.0, 100.0f, 0.0f}, {1.0f, 1.0f, 1.0f});
-	engine.DrawLine({4.20f, 2.10f, 0.0f}, {4.50f, 1.55f, 0.0f}, {1.0f, 1.0f, 1.0f});
-	engine.DrawLine({4.50f, 1.55f, 0.0f}, {4.75f, 2.30f, 0.0f}, {1.0f, 1.0f, 1.0f});
-
-	//whiskers left
-	engine.DrawLine({3.70f, 3.20f, 0.0f}, {3.20f, 3.10f, 0.0f}, {1.0f, 1.0f, 1.0f});
-	engine.DrawLine({3.70f, 3.30f, 0.0f}, {3.20f, 3.40f, 0.0f}, {1.0f, 1.0f, 1.0f});
-	engine.DrawLine({3.72f, 3.45f, 0.0f}, {3.35f, 3.65f, 0.0f}, {1.0f, 1.0f, 1.0f});
-
-	// whiskers right
-	engine.DrawLine({4.30f, 3.20f, 0.0f}, {4.80f, 3.10f, 0.0f}, {1.0f, 1.0f, 1.0f});
-	engine.DrawLine({4.30f, 3.30f, 0.0f}, {4.80f, 3.32f, 0.0f}, {1.0f, 1.0f, 1.0f});
-	engine.DrawLine({4.32f, 3.45f, 0.0f}, {4.70f, 3.60f, 0.0f}, {1.0f, 1.0f, 1.0f});
-}
-
-
-void World::_DrawEyes(const EngineContext& engine)
+void World::_UpdateCatFeatures(const EngineContext& engine)
 {
 	// move eye pupils to follow mouse ball
 	const auto& transform = engine.GetEntityRegistry().GetComponent<COGTransform>(mBall);
@@ -217,9 +119,146 @@ void World::_DrawEyes(const EngineContext& engine)
 		mEyePos1 = {-40.0f, 250};
 		mEyePos2 = {40.0f, 250};
 	}
+
+	// Update timer for cat mouth animation
+	if (mScoreAnimationTimer > 0)
+	{
+		mScoreAnimationTimer--;
+	}
+}
+
+void World::_InitGameplayEntities(const EngineContext& engine, EntityRegistry& registry)
+{
+	mPlayer1 = std::make_unique<Player>(registry, glm::vec2{-400, 100}, glm::vec3{255, 229, 128}, glm::vec2{1, 800},
+	                                    glm::vec2{400, -100}, glm::vec3{0, 0, 255});
+
+	mPlayer1->SetUserInputs(engine, registry, LLGL::Key::W, LLGL::Key::S);
+
+	mPlayer2 = std::make_unique<Player>(registry, glm::vec2{378, 100}, glm::vec3{255, 229, 128}, glm::vec2{1, 800},
+	                                    glm::vec2{-405, -100}, glm::vec3{0, 0, 255});
+
+	if (mInput2)
+	{
+		SetPlayerAI(registry);
+	}
+	else
+	{
+		mPlayer2->SetUserInputs(engine, registry, LLGL::Key::Up, LLGL::Key::Down);
+	}
+
+	auto callback = [](COGPhysics& physics, COGPhysics& otherPhysics, int mask)
+	{
+		if (mask == static_cast<int>(CollisionMask::Paddle))
+		{
+			auto velocity = otherPhysics.GetVelocity();
+			otherPhysics.SetVelocity({velocity.x, -velocity.y});
+		}
+	};
+
+	int mask = static_cast<int>(CollisionMask::Paddle) | static_cast<int>(CollisionMask::Ball);
+	// boundaries
+	const auto boundary1 = registry.CreateEntity();
+	registry.AddComponent<COGTransform>(boundary1, glm::vec2{-400, 550});
+	registry.AddComponent<COGBoxShape>(boundary1, 800.0f, 40.0f, glm::vec3{0, 0, 0});
+	registry.AddComponent<COGPhysics>(boundary1, glm::vec2{0, 0}, glm::vec2(0, 1));
+	registry.AddComponent<COGCollision>(boundary1, callback, static_cast<int>(CollisionMask::Boundary),
+	                                    mask);
+
+	const auto boundary2 = registry.CreateEntity();
+	registry.AddComponent<COGTransform>(boundary2, glm::vec2{-400, -100});
+	registry.AddComponent<COGBoxShape>(boundary2, 800.0f, 40.0f, glm::vec3{0, 0, 0});
+	registry.AddComponent<COGPhysics>(boundary2, glm::vec2{0, 0}, glm::vec2(0, 1));
+	registry.AddComponent<COGCollision>(boundary2, callback, static_cast<int>(CollisionMask::Boundary),
+	                                    mask);
+
+	mBall = _CreateBall(registry, {0, 0}, {179, 170, 154});
+	mScoreManager = std::make_unique<ScoreManager>();
+}
+
+EntityId World::_CreateBall(EntityRegistry& registry, glm::vec2 position, glm::vec3 color) const
+{
+	const auto ballEntity = registry.CreateEntity();
+	registry.AddComponent<COGTransform>(ballEntity, position);
+	registry.AddComponent<COGCircleShape>(ballEntity, fBallRadius, color);
+	registry.AddComponent<COGPhysics>(ballEntity, glm::vec2{50, 50});
+	registry.AddComponent<COGBounce>(ballEntity);
+
+	return ballEntity;
+}
+
+void World::_DrawMouth(const EngineContext& engine) const
+{
+	//mouth
+	if (mScoreAnimationTimer > 0)
+	{
+		// display surprised mouth for timer duration after player scores
+		engine.DrawCircle({4.00f, 3.50f, 0.0f}, 0.2f, {255, 255, 255, 1.0f});
+	}
+	else
+	{
+		engine.DrawLine({4.00f, 3.40f, 0.0f}, {3.85f, 3.50f, 0.0f}, {255, 255, 255, 1.0f});
+		engine.DrawLine({4.00f, 3.40f, 0.0f}, {4.15f, 3.50f, 0.0f}, {255, 255, 255, 1.0f});
+	}
+}
+
+void World::_ChooseButton1()
+{
+	mInput1 = true;
+	mInput2 = false;
+}
+
+void World::_ChooseButton2()
+{
+	mInput1 = false;
+	mInput2 = true;
+}
+
+void World::_ChooseButtonEnter()
+{
+	if (mInput1 || mInput2)
+	{
+		mHasGameStarted = true;
+	}
+}
+
+// TODO: Haven't implemented alpha for color
+void World::_DrawKitty(const EngineContext& engine) const
+{
+	// head
+	// color alpha 155
+	engine.DrawCircle({0.0f, 300.0f, 0.0f}, 150.0f, {1.0f, 229, 0.5f, 0.5f});
+
+	//nose
+	engine.DrawCircle({-15.0f, 310.0f, 0.0f}, 10.0f, {1.0f, 0.5f, 0.8f, 1.0f});
+	engine.DrawCircle({0.0f, 300.0f, 0.0f}, 14.0f, {1.0f, 0.5f, 0.8f, 1.0f});
+	engine.DrawCircle({15.0f, 310.0f, 0.0f}, 10.0f, {1.0f, 0.5f, 0.8f, 1.0f});
+
+	_DrawMouth(engine);
+	_DrawEyes(engine);
+
+	//ears 
+	engine.DrawLine({-100.0, 100.0f, 0.0f}, {-95.0f, 50.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+	engine.DrawLine({-95.0f, 50.0f, 0.0f}, {-105.0, 100.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+	engine.DrawLine({4.20f, 2.10f, 0.0f}, {4.50f, 1.55f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+	engine.DrawLine({4.50f, 1.55f, 0.0f}, {4.75f, 2.30f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+
+	//whiskers left
+	engine.DrawLine({3.70f, 3.20f, 0.0f}, {3.20f, 3.10f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+	engine.DrawLine({3.70f, 3.30f, 0.0f}, {3.20f, 3.40f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+	engine.DrawLine({3.72f, 3.45f, 0.0f}, {3.35f, 3.65f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+
+	// whiskers right
+	engine.DrawLine({4.30f, 3.20f, 0.0f}, {4.80f, 3.10f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+	engine.DrawLine({4.30f, 3.30f, 0.0f}, {4.80f, 3.32f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+	engine.DrawLine({4.32f, 3.45f, 0.0f}, {4.70f, 3.60f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+}
+
+
+void World::_DrawEyes(const EngineContext& engine) const
+{
 	//eyes
-	engine.DrawCircle({50.0f, 250.0f, 0.0f}, 30.0f, {1.0f, 1.0f, 1.0f});
-	engine.DrawCircle({-50.0f, 250.0f, 0.0f}, 30.0f, {1.0f, 1.0f, 1.0f});
-	engine.DrawCircle(glm::vec3(mEyePos1, 0.0f), 10.0f, {0.0f, 0.0f, 0.0f});
-	engine.DrawCircle(glm::vec3(mEyePos2, 0.0f), 10.0f, {0.0f, 0.0f, 0.0f});
+	engine.DrawCircle({50.0f, 250.0f, 0.0f}, 30.0f, {1.0f, 1.0f, 1.0f, 1.0f});
+	engine.DrawCircle({-50.0f, 250.0f, 0.0f}, 30.0f, {1.0f, 1.0f, 1.0f, 1.0f});
+	engine.DrawCircle(glm::vec3(mEyePos1, 0.0f), 10.0f, {0.0f, 0.0f, 0.0f, 1.0f});
+	engine.DrawCircle(glm::vec3(mEyePos2, 0.0f), 10.0f, {0.0f, 0.0f, 0.0f, 1.0f});
 }

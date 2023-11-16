@@ -11,7 +11,7 @@ public:
 	World(const EngineContext& engine, EntityRegistry& registry);
 
 	void Update(const EngineContext& engine, EntityRegistry& registry) const;
-	void Render(const EngineContext& engine, EntityRegistry& registry);
+	void Render(const EngineContext& engine, EntityRegistry& registry) const;
 
 	void SetPlayerAI(EntityRegistry& registry) const;
 
@@ -19,13 +19,17 @@ public:
 
 private:
 	void _Menu(const EngineContext& engine) const;
+	void _UpdateCatFeatures(const EngineContext& engine);
+	void _InitGameplayEntities(const EngineContext& engine, EntityRegistry& registry);
 
 	EntityId _CreateBall(EntityRegistry& registry, glm::vec2 position, glm::vec3 color) const;
 
-	void _DrawKitty(const EngineContext& engine);
-	void _DrawEyes(const EngineContext& engine);
-	void _DrawMouth(const EngineContext& engine);
+	// Render Helpers
+	void _DrawKitty(const EngineContext& engine) const;
+	void _DrawEyes(const EngineContext& engine) const;
+	void _DrawMouth(const EngineContext& engine) const;
 
+	// User Inputs
 	void _ChooseButton1();
 	void _ChooseButton2();
 	void _ChooseButtonEnter();

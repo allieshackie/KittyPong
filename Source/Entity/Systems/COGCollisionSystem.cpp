@@ -3,40 +3,74 @@
 #include "Entity/Components/COGTransform.h"
 #include "Entity/Components/COGBoxShape.h"
 #include "Entity/Components/COGCircleShape.h"
-#include "Entity/Components/COGName.h"
 #include "Entity/Components/COGPhysics.h"
-#include "Entity/Components/Score.h"
 
 #include "COGCollisionSystem.h"
-
 
 void COGCollisionSystem::Update(EntityRegistry& entityRegistry) const
 {
 	const auto ballView = entityRegistry.GetEnttRegistry().view<
 		COGBounce, COGCircleShape, COGPhysics, COGTransform>();
 	const auto boxView = entityRegistry.GetEnttRegistry().view<
-		COGCollision, COGBoxShape, COGPhysics, COGTransform, COGName>();
-	ballView.each([=, &entityRegistry](auto entity, const COGBounce& bounce, const COGCircleShape& ball,
+		COGCollision, COGBoxShape, COGPhysics, COGTransform>();
+
+	// Circle - box interactions
+	ballView.each([=, &entityRegistry](const COGBounce& bounce, const COGCircleShape& ball,
 	                                   COGPhysics& physics, const COGTransform& transform)
 	{
-		boxView.each([=, &entityRegistry, &physics](auto otherEntity, COGCollision& otherCollider,
-		                                            const COGBoxShape& box, COGPhysics& otherPhysics,
-		                                            const COGTransform& otherTransform, const COGName& name)
+		boxView.each([=, &entityRegistry, &physics, &bounce](const COGCollision& otherCollider,
+		                                                     const COGBoxShape& box, COGPhysics& otherPhysics,
+		                                                     const COGTransform& otherTransform)
 		{
-			// do not collide with self
-			if (otherEntity != entity)
+			if (_CanCollide(bounce, otherCollider))
 			{
 				if (_CircleBoxCollisionCheck(ball, transform, box, otherTransform))
 				{
-					bounce.OnCollision(physics);
-
-					// other collider has score component, add to score
-					//auto& score = entityRegistry.GetComponent<Score>(entity);
-					//score.AddPoint();
+					bounce.OnCollision(physics, otherPhysics, otherCollider.GetIdentity());
+					otherCollider.OnCollision(physics, otherPhysics, bounce.GetIdentity());
 				}
 			}
 		});
 	});
+
+	// Box - Box interactions
+	boxView.each([=, &entityRegistry](auto entity, const COGCollision& collider,
+	                                  const COGBoxShape& box, COGPhysics& physics,
+	                                  const COGTransform& transform)
+	{
+		boxView.each([=, &entityRegistry, &physics, &collider](auto otherEntity, const COGCollision& otherCollider,
+		                                                       const COGBoxShape& otherBox, COGPhysics& otherPhysics,
+		                                                       const COGTransform& otherTransform)
+		{
+			// Don't compare against self
+			if (entity != otherEntity)
+			{
+				if (_CanCollide(collider, otherCollider))
+				{
+					if (_BoxBoxCollisionCheck(box, transform, otherBox, otherTransform))
+					{
+						collider.OnCollision(physics, otherPhysics, otherCollider.GetIdentity());
+						otherCollider.OnCollision(physics, otherPhysics, collider.GetIdentity());
+					}
+				}
+			}
+		});
+	});
+}
+
+bool COGCollisionSystem::_CanCollide(const COGCollision& collision, const COGCollision& otherCollision) const
+{
+	if ((collision.GetIdentity() & otherCollision.GetMask()) == 0)
+	{
+		return false;
+	}
+
+	if ((otherCollision.GetIdentity() & collision.GetMask()) == 0)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool COGCollisionSystem::_CircleBoxCollisionCheck(const COGCircleShape& circle, const COGTransform& transform,
@@ -46,9 +80,7 @@ bool COGCollisionSystem::_CircleBoxCollisionCheck(const COGCircleShape& circle, 
 	float testX = transform.GetPosition().x;
 	float testY = transform.GetPosition().y;
 
-	const glm::vec2 topLeftBox = {
-		otherTransform.GetPosition().x - (box.GetWidth() / 2), otherTransform.GetPosition().y - (box.GetHeight() / 2)
-	};
+	const glm::vec2 topLeftBox = otherTransform.GetPosition();
 
 	// which edge is closest?
 	if (transform.GetPosition().x < topLeftBox.x) testX = topLeftBox.x; // test left edge
@@ -68,5 +100,22 @@ bool COGCollisionSystem::_CircleBoxCollisionCheck(const COGCircleShape& circle, 
 	{
 		return true;
 	}
+	return false;
+}
+
+bool COGCollisionSystem::_BoxBoxCollisionCheck(const COGBoxShape& box, const COGTransform& transform,
+                                               const COGBoxShape& otherBox, const COGTransform& otherTransform) const
+{
+	auto& boxPos = transform.GetPosition();
+	auto& otherBoxPos = otherTransform.GetPosition();
+
+	if (boxPos.x < otherBoxPos.x + otherBox.GetWidth() && // is box to left of otherBox?
+		boxPos.x + box.GetWidth() > otherBoxPos.x && // is box to right of otherBox?
+		boxPos.y < otherBoxPos.y + otherBox.GetHeight() &&
+		boxPos.y + box.GetHeight() > otherBoxPos.y)
+	{
+		return true;
+	}
+
 	return false;
 }
