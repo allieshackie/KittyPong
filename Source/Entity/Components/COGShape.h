@@ -1,5 +1,5 @@
 #pragma once
-#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 class COGTransform;
 class EngineContext;
@@ -7,19 +7,19 @@ class EngineContext;
 class COGShape
 {
 public:
-	COGShape(glm::vec3 pColor)
+	COGShape(glm::vec4 pColor)
 		: mColor(pColor)
 	{
 	}
 
 	virtual ~COGShape() = default;
 
-	glm::vec3 GetColor() const { return mColor; }
+	glm::vec4 GetColor() const { return mColor; }
 
 	virtual void Render(const EngineContext& context, COGTransform& transform)
 	{
 	}
 
 private:
-	glm::vec3 mColor = {0, 0, 0};
+	glm::vec4 mColor = {0, 0, 0, 1};
 };

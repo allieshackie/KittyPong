@@ -4,7 +4,7 @@
 class COGCircleShape : public COGShape
 {
 public:
-	COGCircleShape(float fRadius, glm::vec3 pColor);
+	COGCircleShape(float fRadius, glm::vec4 pColor);
 
 	float GetRadius() const;
 

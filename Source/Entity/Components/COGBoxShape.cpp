@@ -3,7 +3,7 @@
 
 #include "COGBoxShape.h"
 
-COGBoxShape::COGBoxShape(float fWidth, float fHeight, glm::vec3 color)
+COGBoxShape::COGBoxShape(float fWidth, float fHeight, glm::vec4 color)
 	: COGShape(color)
 	  , mWidth(fWidth)
 	  , mHeight(fHeight)

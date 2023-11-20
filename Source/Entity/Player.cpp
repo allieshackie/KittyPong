@@ -1,17 +1,15 @@
+#include "Core/EngineContext.h"
 #include "Entity/Components/COGBoxShape.h"
 #include "Entity/Components/COGCollision.h"
 #include "Entity/Components/COGPhysics.h"
 #include "Entity/Components/COGTransform.h"
 #include "Entity/Components/Score.h"
+#include "Entity/Components/COGName.h"
 
 #include "Player.h"
 
-#include "Components/COGName.h"
-#include "Core/EngineContext.h"
-
-
-Player::Player(EntityRegistry& registry, glm::vec2 paddlePos, glm::vec3 paddleColor, glm::vec2 boundSize,
-               glm::vec2 boundPos, glm::vec3 boundColor)
+Player::Player(EntityRegistry& registry, glm::vec2 paddlePos, glm::vec4 paddleColor, glm::vec2 boundSize,
+               glm::vec2 boundPos, glm::vec4 boundColor)
 {
 	mPlayer = registry.CreateEntity();
 	registry.AddComponent<Score>(mPlayer);
@@ -39,7 +37,7 @@ void Player::SetUserInputs(const EngineContext& context, EntityRegistry& registr
 	context.GetInputHandler().RegisterButtonDownHandler(down, [=, &registry]()
 	{
 		auto& physics = registry.GetComponent<COGPhysics>(mPaddle);
-		physics.SetFriction(1.0f);
+		physics.SetFriction(1.0f); 
 		physics.SetVelocity({0.0f, fMovementSpeed});
 	});
 
@@ -50,7 +48,7 @@ void Player::SetUserInputs(const EngineContext& context, EntityRegistry& registr
 	});
 }
 
-void Player::_CreatePaddle(EntityRegistry& registry, glm::vec2 position, glm::vec3 color)
+void Player::_CreatePaddle(EntityRegistry& registry, glm::vec2 position, glm::vec4 color)
 {
 	auto callback = [](COGPhysics& physics, COGPhysics& otherPhysics, int mask)
 	{
@@ -66,7 +64,7 @@ void Player::_CreatePaddle(EntityRegistry& registry, glm::vec2 position, glm::ve
 	registry.AddComponent<COGName>(mPaddle, "Player Paddle");
 }
 
-void Player::_CreateBoundary(EntityRegistry& registry, glm::vec2 size, glm::vec2 position, glm::vec3 color)
+void Player::_CreateBoundary(EntityRegistry& registry, glm::vec2 size, glm::vec2 position, glm::vec4 color)
 {
 	auto callback = [this, &registry](COGPhysics& physics, COGPhysics& otherPhysics, int mask)
 	{

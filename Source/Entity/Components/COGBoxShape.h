@@ -6,7 +6,7 @@ class GameObject;
 class COGBoxShape : public COGShape
 {
 public:
-	COGBoxShape(float fWidth, float fHeight, glm::vec3 color);
+	COGBoxShape(float fWidth, float fHeight, glm::vec4 color);
 
 	void Render(const EngineContext& context, COGTransform& transform) override;
 

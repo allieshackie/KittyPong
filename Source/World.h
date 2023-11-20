@@ -1,5 +1,6 @@
 #pragma once
 #include "Entity/Player.h"
+#include "Entity/Systems/AIPlayerSystem.h"
 #include "Entity/Systems/ScoreManager.h"
 
 class EntityRegistry;
@@ -10,7 +11,7 @@ class World
 public:
 	World(const EngineContext& engine, EntityRegistry& registry);
 
-	void Update(const EngineContext& engine, EntityRegistry& registry) const;
+	void Update(const EngineContext& engine, EntityRegistry& registry);
 	void Render(const EngineContext& engine, EntityRegistry& registry) const;
 
 	void SetPlayerAI(EntityRegistry& registry) const;
@@ -22,7 +23,7 @@ private:
 	void _UpdateCatFeatures(const EngineContext& engine);
 	void _InitGameplayEntities(const EngineContext& engine, EntityRegistry& registry);
 
-	EntityId _CreateBall(EntityRegistry& registry, glm::vec2 position, glm::vec3 color) const;
+	EntityId _CreateBall(EntityRegistry& registry, glm::vec2 position, glm::vec4 color) const;
 
 	// Render Helpers
 	void _DrawKitty(const EngineContext& engine) const;
@@ -36,6 +37,7 @@ private:
 
 	// user input and score manager 
 	std::unique_ptr<ScoreManager> mScoreManager;
+	std::unique_ptr<AIPlayerSystem> mAIPlayerSystem;
 	std::unique_ptr<Player> mPlayer1;
 	std::unique_ptr<Player> mPlayer2;
 	EntityId mBall;

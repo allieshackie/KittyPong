@@ -2,7 +2,7 @@
 #include "Core/EngineContext.h"
 #include "COGCircleShape.h"
 
-COGCircleShape::COGCircleShape(float fRadius, glm::vec3 pColor)
+COGCircleShape::COGCircleShape(float fRadius, glm::vec4 pColor)
 	: COGShape(pColor)
 	  , mRadius(fRadius)
 {
