@@ -1,0 +1,3 @@
+[submodule "Libs/MonEngine"]
+	path = Libs/MonEngine
+	url = https://github.com/allieshackie/MonEngine
