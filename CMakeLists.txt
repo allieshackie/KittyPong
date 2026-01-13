@@ -9,7 +9,9 @@ project(KittyPongProj)
 set(SOURCE_PROJECT_DIR Source) 
 set(THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/ThirdParty)
 set(BINARY_DIR ${CMAKE_BINARY_DIR}/Binaries)
-include(${CMAKE_CURRENT_SOURCE_DIR}/Lib/MonEngine/cmake/CmakeUtils.cmake)
+
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/Libs/MonEngine/cmake/CmakeUtils.cmake)
 
 macro(ADD_DEFINE IDENT)
     add_definitions("-D${IDENT}")
@@ -49,8 +51,8 @@ target_precompile_headers(
 )
 
 # ============== ENGINE ==============
-set(MON_DEV_BUILD_GAME OFF)
-add_subdirectory(${PROJECT_SOURCE_DIR}/Lib/MonEngine)
+set(PROJ_TO_BUILD "")
+add_subdirectory(${PROJECT_SOURCE_DIR}/Libs/MonEngine)
 
 target_link_libraries(
     KittyPong 

@@ -9,7 +9,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 Build/
-Lib/
+Libs/
 
 # User-specific files
 *.rsuser
