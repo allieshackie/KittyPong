@@ -1,12 +1,12 @@
 #pragma once
-#include "Entity/EntityRegistry.h"
+#include <entt/entt.hpp>
 
 class AIPlayer
 {
 public:
-	EntityId GetBallEntity() const { return mBall; }
-	void SetBall(const EntityId ball) { mBall = ball; }
+	entt::entity GetBallEntity() const { return mBall; }
+	void SetBall(const entt::entity ball) { mBall = ball; }
 
 private:
-	EntityId mBall;
+	entt::entity mBall;
 };

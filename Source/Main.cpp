@@ -1,13 +1,11 @@
-#include "Core/EngineContext.h"
 #include "Game.h"
 
 int main()
 {
-	const auto game = new Game();
-	const auto engine = std::make_unique<EngineContext>(game, LLGL::Extent2D{800, 600}, "Kitty Pong",
-	                                                    LLGL::ColorRGBAf{0.1f, 0.1f, 0.1f, 1.0f}, false);
+	const auto game = std::make_unique<Game>(LLGL::Extent2D{ 1200, 800 }, "Game",
+		LLGL::ColorRGBAf{ 0.2f, 0.5f, 1.0f, 1.0f });
 
-	engine->Run(game);
+	game->Run();
 
 	return 0;
 }

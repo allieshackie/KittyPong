@@ -1,3 +1,4 @@
+#include "Core/World.h"
 #include "Entity/Components/COGBounce.h"
 #include "Entity/Components/COGShape.h"
 #include "Entity/Components/COGTransform.h"
@@ -7,55 +8,56 @@
 
 #include "COGCollisionSystem.h"
 
-void COGCollisionSystem::Update(EntityRegistry& entityRegistry) const
+void COGCollisionSystem::Update(std::weak_ptr<World> world) const
 {
-	const auto ballView = entityRegistry.GetEnttRegistry().view<
-		COGBounce, COGCircleShape, COGPhysics, COGTransform>();
-	const auto boxView = entityRegistry.GetEnttRegistry().view<
-		COGCollision, COGBoxShape, COGPhysics, COGTransform>();
-
-	// Circle - box interactions
-	ballView.each([=, &entityRegistry](const COGBounce& bounce, const COGCircleShape& ball,
-	                                   COGPhysics& physics, const COGTransform& transform)
+	if (auto worldPtr = world.lock())
 	{
-		boxView.each([=, &entityRegistry, &physics, &bounce](const COGCollision& otherCollider,
-		                                                     const COGBoxShape& box, COGPhysics& otherPhysics,
-		                                                     const COGTransform& otherTransform)
-		{
-			if (_CanCollide(bounce, otherCollider))
-			{
-				if (_CircleBoxCollisionCheck(ball, transform, box, otherTransform))
-				{
-					bounce.OnCollision(physics, otherPhysics, otherCollider.GetIdentity());
-					otherCollider.OnCollision(physics, otherPhysics, bounce.GetIdentity());
-				}
-			}
-		});
-	});
+		const auto ballView = worldPtr->GetRegistry().view<COGBounce, COGCircleShape, COGPhysics, COGTransform>();
+		const auto boxView = worldPtr->GetRegistry().view<COGCollision, COGBoxShape, COGPhysics, COGTransform>();
 
-	// Box - Box interactions
-	boxView.each([=, &entityRegistry](auto entity, const COGCollision& collider,
-	                                  const COGBoxShape& box, COGPhysics& physics,
-	                                  const COGTransform& transform)
-	{
-		boxView.each([=, &entityRegistry, &physics, &collider](auto otherEntity, const COGCollision& otherCollider,
-		                                                       const COGBoxShape& otherBox, COGPhysics& otherPhysics,
-		                                                       const COGTransform& otherTransform)
+		// Circle - box interactions
+		ballView.each([=](const COGBounce& bounce, const COGCircleShape& ball,
+										   COGPhysics& physics, const COGTransform& transform)
 		{
-			// Don't compare against self
-			if (entity != otherEntity)
+			boxView.each([=, &physics, &bounce](const COGCollision& otherCollider,
+																 const COGBoxShape& box, COGPhysics& otherPhysics,
+																 const COGTransform& otherTransform)
 			{
-				if (_CanCollide(collider, otherCollider))
+				if (_CanCollide(bounce, otherCollider))
 				{
-					if (_BoxBoxCollisionCheck(box, transform, otherBox, otherTransform))
+					if (_CircleBoxCollisionCheck(ball, transform, box, otherTransform))
 					{
-						collider.OnCollision(physics, otherPhysics, otherCollider.GetIdentity());
-						otherCollider.OnCollision(physics, otherPhysics, collider.GetIdentity());
+						bounce.OnCollision(physics, otherPhysics, otherCollider.GetIdentity());
+						otherCollider.OnCollision(physics, otherPhysics, bounce.GetIdentity());
 					}
 				}
-			}
+			});
 		});
-	});
+
+		// Box - Box interactions
+		boxView.each([=](auto entity, const COGCollision& collider,
+										  const COGBoxShape& box, COGPhysics& physics,
+										  const COGTransform& transform)
+		{
+			boxView.each([=, &physics, &collider](auto otherEntity, const COGCollision& otherCollider,
+																   const COGBoxShape& otherBox, COGPhysics& otherPhysics,
+																   const COGTransform& otherTransform)
+			{
+				// Don't compare against self
+				if (entity != otherEntity)
+				{
+					if (_CanCollide(collider, otherCollider))
+					{
+						if (_BoxBoxCollisionCheck(box, transform, otherBox, otherTransform))
+						{
+							collider.OnCollision(physics, otherPhysics, otherCollider.GetIdentity());
+							otherCollider.OnCollision(physics, otherPhysics, collider.GetIdentity());
+						}
+					}
+				}
+			});
+		});
+	}
 }
 
 bool COGCollisionSystem::_CanCollide(const COGCollision& collision, const COGCollision& otherCollision) const

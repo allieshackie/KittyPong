@@ -1,6 +1,9 @@
 # Generate Solution -> cmake -B ./Build -DMON_DEV_BUILD_GAME=ON
 cmake_minimum_required(VERSION 3.18.2)
 
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Libs/MonDev/ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(VCPKG_MANIFEST_MODE ON)
+
 #  ============== PROJECT ================
 project(KittyPongProj)
 
@@ -11,7 +14,7 @@ set(THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/ThirdParty)
 set(BINARY_DIR ${CMAKE_BINARY_DIR}/Binaries)
 
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/Libs/MonEngine/cmake/CmakeUtils.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/Libs/MonDev/cmake/CmakeUtils.cmake)
 
 macro(ADD_DEFINE IDENT)
     add_definitions("-D${IDENT}")
@@ -35,7 +38,6 @@ source_group(TREE ${PROJECT_SOURCE_DIR}/Source PREFIX "Source Files/" FILES ${SO
 
 # create .exe 
 add_executable(KittyPong ${SOURCES})
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT KittyPong)
 
 copy_data_contents(${CMAKE_CURRENT_SOURCE_DIR}/Data/ ${CMAKE_BINARY_DIR}/Data)
 
@@ -51,17 +53,13 @@ target_precompile_headers(
 )
 
 # ============== ENGINE ==============
-set(PROJ_TO_BUILD "")
-add_subdirectory(${PROJECT_SOURCE_DIR}/Libs/MonEngine)
-
-target_link_libraries(
-    KittyPong 
-    PRIVATE
-    MonEngine
-)
+add_subdirectory(Libs/MonDev)
+target_link_libraries(KittyPong PRIVATE Engine)
 
 target_include_directories(
     KittyPong
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Source
 )
+
+set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT KittyPong)

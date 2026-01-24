@@ -3,29 +3,30 @@
 #include <glm/vec4.hpp>
 #include "LLGL/Key.h"
 
-#include "Entity/EntityRegistry.h"
-
-class EngineContext;
+class InputHandler;
+class World;
 
 class Player
 {
 public:
-	Player(EntityRegistry& registry, glm::vec2 paddlePos, glm::vec4 paddleColor, glm::vec2 boundSize,
+	Player(std::weak_ptr<World> world, glm::vec2 paddlePos, glm::vec4 paddleColor, glm::vec2 boundSize,
 	       glm::vec2 boundPos, glm::vec4 boundColor);
 
-	EntityId GetPlayerId() const { return mPlayer; }
-	EntityId GetPaddleId() const { return mPaddle; }
+	entt::entity GetPlayerId() const { return mPlayer; }
+	entt::entity GetPaddleId() const { return mPaddle; }
 
-	void SetUserInputs(const EngineContext& context, EntityRegistry& registry, LLGL::Key up, LLGL::Key down) const;
+	void SetUserInputs(std::weak_ptr<InputHandler> inputHandler, LLGL::Key up, LLGL::Key down) const;
 
 private:
-	void _CreatePaddle(EntityRegistry& registry, glm::vec2 position, glm::vec4 color);
-	void _CreateBoundary(EntityRegistry& registry, glm::vec2 size, glm::vec2 position,
+	void _CreatePaddle(glm::vec2 position, glm::vec4 color);
+	void _CreateBoundary(glm::vec2 size, glm::vec2 position,
 	                     glm::vec4 color);
 
-	EntityId mPlayer;
-	EntityId mPaddle;
-	EntityId mBoundary;
+	entt::entity mPlayer;
+	entt::entity mPaddle;
+	entt::entity mBoundary;
+
+	std::weak_ptr<World> mWorld;
 
 	const float fPaddleWidth = 20.0f;
 	const float fPaddleHeight = 100.0f;

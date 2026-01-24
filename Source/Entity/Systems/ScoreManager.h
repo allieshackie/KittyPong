@@ -1,10 +1,12 @@
 #pragma once
+#include <entt/entt.hpp>
 
-class EngineContext;
+class RenderSystem;
+class World;
 
 class ScoreManager
 {
 public:
-	bool Update(const EngineContext& engine, EntityRegistry& entityRegistry, const EntityId& player1,
-	            const EntityId& player2) const;
+	bool Update(const RenderSystem& system, std::weak_ptr<World> world, entt::entity player1,
+	            entt::entity player2) const;
 };

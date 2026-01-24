@@ -1,8 +1,8 @@
 #pragma once
 #include <glm/vec4.hpp>
+#include "Graphics/RenderSystem.h"
 
 class COGTransform;
-class EngineContext;
 
 class COGShape
 {
@@ -16,7 +16,7 @@ public:
 
 	glm::vec4 GetColor() const { return mColor; }
 
-	virtual void Render(const EngineContext& context, COGTransform& transform)
+	virtual void Render(const RenderSystem& system, COGTransform& transform)
 	{
 	}
 

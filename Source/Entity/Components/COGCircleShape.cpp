@@ -1,5 +1,4 @@
 #include "COGTransform.h"
-#include "Core/EngineContext.h"
 #include "COGCircleShape.h"
 
 COGCircleShape::COGCircleShape(float fRadius, glm::vec4 pColor)
@@ -8,10 +7,10 @@ COGCircleShape::COGCircleShape(float fRadius, glm::vec4 pColor)
 {
 }
 
-void COGCircleShape::Render(const EngineContext& context, COGTransform& transform)
+void COGCircleShape::Render(const RenderSystem& system, COGTransform& transform)
 {
 	const auto& pos = transform.GetPosition();
-	context.DrawCircle(glm::vec3(pos, 1.0f), mRadius, GetColor());
+	system.DrawCircle(glm::vec3(pos, 1.0f), mRadius, GetColor());
 }
 
 float COGCircleShape::GetRadius() const

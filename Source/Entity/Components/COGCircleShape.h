@@ -8,7 +8,7 @@ public:
 
 	float GetRadius() const;
 
-	void Render(const EngineContext& context, COGTransform& transform) override;
+	void Render(const RenderSystem& system, COGTransform& transform) override;
 
 private:
 	float mRadius = 0.0f;

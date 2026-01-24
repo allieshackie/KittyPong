@@ -1,16 +1,16 @@
 #pragma once
-#include "Entity/EntityRegistry.h"
 
 class COGCollision;
 class COGBoxShape;
 class COGCircleShape;
 class COGPhysics;
 class COGTransform;
+class World;
 
 class COGCollisionSystem
 {
 public:
-	void Update(EntityRegistry& entityRegistry) const;
+	void Update(std::weak_ptr<World> world) const;
 
 private:
 	bool _CanCollide(const COGCollision& collision, const COGCollision& otherCollision) const;

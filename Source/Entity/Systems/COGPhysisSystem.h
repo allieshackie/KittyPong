@@ -1,8 +1,9 @@
 #pragma once
-#include "Entity/EntityRegistry.h"
+
+class World;
 
 class COGPhysicsSystem
 {
 public:
-	void Update(float deltaTime, EntityRegistry& entityRegistry) const;
+	void Update(float deltaTime, std::weak_ptr<World> world) const;
 };
