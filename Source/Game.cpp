@@ -51,9 +51,11 @@ Game::Game(const LLGL::Extent2D screenSize, const LLGL::UTF8String& title,
 	auto world = mSceneManager->GetCurrentWorld();
 	mRenderSystem = mSystemManager->RegisterSystem<RenderSystem>(*mRenderContext, *mResourceManager, world);
 	// Gameplay systems
-	mSystemManager->RegisterSystem<AnimatorSystem>(*mResourceManager, world);
-	const auto physicsSystem = mSystemManager->RegisterSystem<PhysicsSystem>(*mRenderSystem, *mResourceManager, world);
 	mSystemManager->RegisterSystem<EditorGUI>(mInputHandler, world, *mRenderContext, *mResourceManager, *mRenderSystem);
+	mSystemManager->RegisterSystem<COGPhysicsSystem>(world);
+	mSystemManager->RegisterSystem<COGCollisionSystem>(world);
+
+	// Need to register AIPlayerSystem if 1 vs AI choice
 
 	mPongWorld = std::make_unique<PongWorld>(mInputHandler, world, *mRenderSystem);
 }

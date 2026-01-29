@@ -1,1 +1,1 @@
-cmake -B ./Solution -A Win32
+cmake -B ./Build

@@ -30,38 +30,47 @@ void Player::SetUserInputs(std::weak_ptr<InputHandler> inputHandler, LLGL::Key u
 {
 	if (auto inputPtr = inputHandler.lock())
 	{
-		if (auto worldPtr = mWorld.lock())
-		{
-			inputPtr->RegisterButtonDownHandler(up, [=, &worldPtr]()
-			{
-				Entity* paddle = worldPtr->GetEntityForId(mPaddle);
-				auto& physics = paddle->GetComponent<COGPhysics>();
-				physics.SetFriction(1.0f);
-				physics.SetVelocity({0.0f, -fMovementSpeed});
-			});
+		inputPtr->RegisterButtonHoldHandler(up, 
+			[=](){
+				if (auto worldPtr = mWorld.lock())
+				{
+					Entity* paddle = worldPtr->GetEntityForId(mPaddle);
+					auto& physics = paddle->GetComponent<COGPhysics>();
+					physics.SetFriction(1.0f);
+					physics.SetVelocity({0.0f, fMovementSpeed});
+				}
+			}, 
+			[=](){
+				if (auto worldPtr = mWorld.lock())
+				{
+					Entity* paddle = worldPtr->GetEntityForId(mPaddle);
+					auto& physics = paddle->GetComponent<COGPhysics>();
+					physics.SetFriction(0.4f);
+				}
+			}
+		);
 
-			inputPtr->RegisterButtonUpHandler(up, [=, &worldPtr]()
+		inputPtr->RegisterButtonHoldHandler(down, 
+			[=]()
 			{
-				Entity* paddle = worldPtr->GetEntityForId(mPaddle);
-				auto& physics = paddle->GetComponent<COGPhysics>();
-				physics.SetFriction(0.4f);
-			});
-
-			inputPtr->RegisterButtonDownHandler(down, [=, &worldPtr]()
+				if (auto worldPtr = mWorld.lock())
+				{
+					Entity* paddle = worldPtr->GetEntityForId(mPaddle);
+					auto& physics = paddle->GetComponent<COGPhysics>();
+					physics.SetFriction(1.0f); 
+					physics.SetVelocity({0.0f, -fMovementSpeed});
+				}
+			}, 
+			[=]()
 			{
-				Entity* paddle = worldPtr->GetEntityForId(mPaddle);
-				auto& physics = paddle->GetComponent<COGPhysics>();
-				physics.SetFriction(1.0f); 
-				physics.SetVelocity({0.0f, fMovementSpeed});
-			});
-
-			inputPtr->RegisterButtonUpHandler(down, [=, &worldPtr]()
-			{
-				Entity* paddle = worldPtr->GetEntityForId(mPaddle);
-				auto& physics = paddle->GetComponent<COGPhysics>();
-				physics.SetFriction(0.4f);
-			});
-		}
+				if (auto worldPtr = mWorld.lock())
+				{
+					Entity* paddle = worldPtr->GetEntityForId(mPaddle);
+					auto& physics = paddle->GetComponent<COGPhysics>();
+					physics.SetFriction(0.4f);
+				}
+			}
+		);
 	}
 }
 
@@ -88,15 +97,18 @@ void Player::_CreatePaddle(glm::vec2 position, glm::vec4 color)
 
 void Player::_CreateBoundary(glm::vec2 size, glm::vec2 position, glm::vec4 color)
 {
-	if (auto worldPtr = mWorld.lock())
+	auto callback = [this](COGPhysics& physics, COGPhysics& otherPhysics, int mask)
 	{
-		auto callback = [this, &worldPtr](COGPhysics& physics, COGPhysics& otherPhysics, int mask)
+		if (auto worldPtr = mWorld.lock())
 		{
 			Entity* player = worldPtr->GetEntityForId(mPlayer);
 			auto& score = player->GetComponent<Score>();
 			score.AddPoint();
-		};
+		}
+	};
 
+	if (auto worldPtr = mWorld.lock())
+	{
 		Entity& boundary = worldPtr->CreateEntity();
 		boundary.AddComponentWithArgs<COGTransform>(position);
 		boundary.AddComponentWithArgs<COGBoxShape>(size.x, size.y, color);

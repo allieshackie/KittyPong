@@ -7,7 +7,12 @@
 
 #include "ScoreManager.h"
 
-bool ScoreManager::Update(const RenderSystem& system, std::weak_ptr<World> world, entt::entity player1, entt::entity player2) const
+ScoreManager::ScoreManager(const RenderSystem& system)
+{
+	mScoreText = system.AddText("", { -0.4, 2.8 }, { 0.01, -0.01 }, { 100, 0, 0, 255 });
+}
+
+bool ScoreManager::Update(RenderSystem& system, std::weak_ptr<World> world, entt::entity player1, entt::entity player2)
 {
 	// color {100, 0, 0, 255}
 
@@ -19,11 +24,16 @@ bool ScoreManager::Update(const RenderSystem& system, std::weak_ptr<World> world
 		Entity* player2Entity = worldPtr->GetEntityForId(player2);
 		auto score2 = player2Entity->GetComponent<Score>();
 
-		const std::string sc1 = std::to_string(score1.GetScore());
-		const std::string sc2 = std::to_string(score2.GetScore());
-		system.DrawTextFont(sc1.c_str(), {350, 45}, {1, 1}, {1,1,1,1}); // display scores  
-		system.DrawTextFont(":", {385, 45}, {1, 1}, { 1,1,1,1 });
-		system.DrawTextFont(sc2.c_str(), {400, 45}, {1, 1}, { 1,1,1,1 });
+		if (mScore1 != score1.GetScore() || mScore2 != score2.GetScore())
+		{
+			const std::string sc1 = std::to_string(score1.GetScore());
+			const std::string sc2 = std::to_string(score2.GetScore());
+			system.UpdateText(mScoreText, sc1 + ":" + sc2);
+
+			mScore1 = score1.GetScore();
+			mScore2 = score2.GetScore();
+		}
+
 		if (score1.GetScore() == 10 || score2.GetScore() == 10)
 		{
 			// return true if game ends

@@ -13,14 +13,14 @@ public:
 	PongWorld(std::weak_ptr<InputHandler> inputHandler, std::weak_ptr<World> world, RenderSystem& renderSystem);
 
 	void Update();
-	void Render() const;
+	void Render();
 
 	void SetPlayerAI() const;
 
 	bool HasGameStarted() const { return mHasGameStarted; }
 
 private:
-	void _Menu() const;
+	void _Menu();
 	void _UpdateCatFeatures();
 	void _InitGameplayEntities(std::weak_ptr<InputHandler> inputHandler);
 
@@ -39,7 +39,14 @@ private:
 	std::unique_ptr<AIPlayerSystem> mAIPlayerSystem;
 	std::unique_ptr<Player> mPlayer1;
 	std::unique_ptr<Player> mPlayer2;
-	entt::entity mBall;
+	entt::entity mBall = entt::entity{};
+
+	uint32_t mHeaderText = 0;
+	uint32_t mButton1 = 0;
+	uint32_t mButton2 = 0;
+	uint32_t mActionText = 0;
+
+	bool mInitializeText = false;
 
 	std::weak_ptr<World> mWorld;
 	RenderSystem& mRenderSystem;
@@ -51,7 +58,7 @@ private:
 
 	bool mHasGameStarted = false;
 
-	const float fBallRadius = 10.0f;
+	const float fBallRadius = 0.2f;
 	glm::vec2 mEyePos1 = { -0.7, 0.2 };
 	glm::vec2 mEyePos2 = { 0.7, 0.2 };
 };

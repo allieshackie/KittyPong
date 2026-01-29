@@ -4,9 +4,13 @@
 
 #include "COGPhysisSystem.h"
 
-void COGPhysicsSystem::Update(float deltaTime, std::weak_ptr<World> world) const
+COGPhysicsSystem::COGPhysicsSystem(std::weak_ptr<World> world) : mWorld(world)
 {
-	if (auto worldPtr = world.lock())
+}
+
+void COGPhysicsSystem::Update(float dt)
+{
+	if (auto worldPtr = mWorld.lock())
 	{
 		const auto view = worldPtr->GetRegistry().view<COGPhysics, COGTransform>();
 		view.each([=](auto& physics, auto& transform)
@@ -19,7 +23,7 @@ void COGPhysicsSystem::Update(float deltaTime, std::weak_ptr<World> world) const
 			glm::vec2 newVelocity = velocity * friction;
 			physics.SetVelocity(newVelocity);
 
-			transform.SetPosition({pos.x + newVelocity.x * deltaTime, pos.y + newVelocity.y * deltaTime});
+			transform.SetPosition({pos.x + newVelocity.x * dt, pos.y + newVelocity.y * dt });
 		});
 	}
 }

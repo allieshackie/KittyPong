@@ -28,8 +28,8 @@ private:
 
 	std::weak_ptr<World> mWorld;
 
-	const float fPaddleWidth = 20.0f;
-	const float fPaddleHeight = 100.0f;
+	const float fPaddleWidth = 0.5f;
+	const float fPaddleHeight = 1.5f;
 
-	const float fMovementSpeed = 100.0f;
+	const float fMovementSpeed = 2.0f;
 };

@@ -32,6 +32,7 @@ PongWorld::PongWorld(std::weak_ptr<InputHandler> inputHandler, std::weak_ptr<Wor
 		                                                   _InitGameplayEntities(inputHandler);
 	                                                   });
 	}
+
 }
 
 void PongWorld::Update()
@@ -50,9 +51,12 @@ void PongWorld::Update()
 	}
 }
 
-void PongWorld::Render() const
+void PongWorld::Render()
 {
-	mRenderSystem.DrawTextFont("KITTY PONG", { -1.5, 3.5 }, { 0.01, -0.01 }, { 100, 0, 0, 255 }); // display header
+	if (!mInitializeText)
+	{
+		mHeaderText = mRenderSystem.AddText("KITTY PONG", { -1.5, 3.5 }, { 0.01, -0.01 }, { 100, 0, 0, 255 });
+	}
 	_DrawKitty();
 	if (!mHasGameStarted)
 	{
@@ -75,6 +79,8 @@ void PongWorld::Render() const
 		}
 
 	}
+
+	mInitializeText = true;
 }
 
 void PongWorld::SetPlayerAI() const
@@ -86,18 +92,18 @@ void PongWorld::SetPlayerAI() const
 	}
 }
 
-void PongWorld::_Menu() const
+void PongWorld::_Menu()
 {
-	mRenderSystem.DrawTextFont("KITTY PONG", {200, 10}, {2, 2}, {1,1,1,1});
-
 	// buttons
-	mRenderSystem.DrawBox({-3, -0.5, 1.5f}, {2, 1, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, mInput1);
-	mRenderSystem.DrawTextFont("1 VS 1", { -3, 0 }, {0.01, -0.01}, {1,0,0,1});
+	mRenderSystem.DrawBox({-3, -0.5, 2.0f}, {2, 1, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, mInput1);
+	mRenderSystem.DrawBox({1, -0.5, 2.0f}, {2, 1, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, mInput2);
 
-	mRenderSystem.DrawBox({1, -0.5, 1.5f}, {2, 1, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, mInput2);
-	mRenderSystem.DrawTextFont("1 VS AI", { 1.5, 0 }, {0.01, -0.01}, {0,1,0,1});
-
-	mRenderSystem.DrawTextFont("Press 1 or 2 to select", {320, 500}, {0.6, 0.6}, {1,1,1,1});
+	if (!mInitializeText)
+	{
+		mButton1 = mRenderSystem.AddText("1 VS 1", { -3.5, 0 }, {0.01, -0.01}, {1,0,0,1});
+		mButton2 = mRenderSystem.AddText("1 VS AI", { 2, 0 }, {0.01, -0.01}, {0,1,0,1});
+		mActionText = mRenderSystem.AddText("Press 1 or 2 to select", { -1.5, -3 }, { 0.01, -0.01 }, {1,1,1,1});
+	}
 }
 
 void PongWorld::_UpdateCatFeatures()
@@ -108,6 +114,11 @@ void PongWorld::_UpdateCatFeatures()
 		// move eye pupils to follow mouse ball
 		const auto& transform = ball->GetComponent<COGTransform>();
 		const auto& pos = transform.GetPosition();
+
+		//system("cls");
+		//std::cout << "Ball: " << pos.x << "," << pos.y << std::endl;
+
+		/*
 		if (pos.x < -10.0f)
 		{
 			// ball left of cat
@@ -137,6 +148,7 @@ void PongWorld::_UpdateCatFeatures()
 			mEyePos1 = {-40.0f, 250};
 			mEyePos2 = {40.0f, 250};
 		}
+		*/
 	}
 
 	// Update timer for cat mouth animation
@@ -147,19 +159,19 @@ void PongWorld::_UpdateCatFeatures()
 }
 
 void PongWorld::_InitGameplayEntities(std::weak_ptr<InputHandler> inputHandler)
-{
-	mPlayer1 = std::make_unique<Player>(mWorld, glm::vec2{-400, 100}, glm::vec4{1.0f, 229, 128, 1.0f},
-	                                    glm::vec2{1, 800},
-	                                    glm::vec2{400, -100}, glm::vec4{0, 0, 1.0f, 1.0f});
+{												// paddle pos     paddle color
+	mPlayer1 = std::make_unique<Player>(mWorld, glm::vec2{-5, 0}, glm::vec4{1, 0, 0, 1.0f},
+										// boundsize         bound pos           bound color
+	                                    glm::vec2{1, 800}, glm::vec2{-6, 0}, glm::vec4{0, 0, 0, 1.0f});
 
 	mPlayer1->SetUserInputs(inputHandler, LLGL::Key::W, LLGL::Key::S);
+	                                             // paddle pos     paddle color
+	mPlayer2 = std::make_unique<Player>(mWorld, glm::vec2{4.5, 0}, glm::vec4{ 1, 0, 0, 1.0f },
+		                               // boundsize         bound pos           bound color 
+	                                    glm::vec2{1, 800}, glm::vec2{6, 0}, glm::vec4{ 0, 0, 0, 1.0f });
 
-	mPlayer2 = std::make_unique<Player>(mWorld, glm::vec2{378, 100}, glm::vec4{1.0f, 229, 128, 1.0f},
-	                                    glm::vec2{1, 800},
-	                                    glm::vec2{-405, -100}, glm::vec4{0, 0, 1.0f, 1.0f});
-
-	_CreateBall({0, 0}, {179, 170, 154, 1.0f});
-	mScoreManager = std::make_unique<ScoreManager>();
+	_CreateBall({0, 0}, {1, 0, 1, 1.0f});
+	mScoreManager = std::make_unique<ScoreManager>(mRenderSystem);
 
 	if (mInput2)
 	{
@@ -185,15 +197,17 @@ void PongWorld::_InitGameplayEntities(std::weak_ptr<InputHandler> inputHandler)
 	if (auto worldPtr = mWorld.lock())
 	{
 		// boundaries
+		
 		Entity& boundary1 = worldPtr->CreateEntity();
-		boundary1.AddComponentWithArgs<COGTransform>(glm::vec2{-400, 550});
-		boundary1.AddComponentWithArgs<COGBoxShape>(800.0f, 40.0f, glm::vec4{0, 0, 0, 1});
+		boundary1.AddComponentWithArgs<COGTransform>(glm::vec2{-6, -5});
+		boundary1.AddComponentWithArgs<COGBoxShape>(800.0f, 2.0f, glm::vec4{0, 0, 0, 1});
 		boundary1.AddComponentWithArgs<COGPhysics>(glm::vec2{0, 0}, glm::vec2(0, 1));
 		boundary1.AddComponentWithArgs<COGCollision>(callback, static_cast<int>(CollisionMask::Boundary), mask);
+		
 
 		Entity& boundary2 = worldPtr->CreateEntity();
-		boundary2.AddComponentWithArgs<COGTransform>(glm::vec2{-400, -100});
-		boundary2.AddComponentWithArgs<COGBoxShape>(800.0f, 40.0f, glm::vec4{0, 0, 0, 1});
+		boundary2.AddComponentWithArgs<COGTransform>(glm::vec2{-6, 3});
+		boundary2.AddComponentWithArgs<COGBoxShape>(800.0f, 2.0f, glm::vec4{0, 0, 0, 1});
 		boundary2.AddComponentWithArgs<COGPhysics>(glm::vec2{0, 0}, glm::vec2(0, 1));
 		boundary2.AddComponentWithArgs<COGCollision>(callback, static_cast<int>(CollisionMask::Boundary), mask);
 	}
@@ -206,7 +220,7 @@ void PongWorld::_CreateBall(glm::vec2 position, glm::vec4 color)
 		Entity& ballEntity = worldPtr->CreateEntity();
 		ballEntity.AddComponentWithArgs<COGTransform>(position);
 		ballEntity.AddComponentWithArgs<COGCircleShape>(fBallRadius, color);
-		ballEntity.AddComponentWithArgs<COGPhysics>(glm::vec2{100, 70});
+		ballEntity.AddComponentWithArgs<COGPhysics>(glm::vec2{3, 0.5});
 		ballEntity.AddComponentWithArgs<COGBounce>();
 
 		mBall = ballEntity.GetId();
@@ -230,6 +244,10 @@ void PongWorld::_ChooseButtonEnter()
 	if (mInput1 || mInput2)
 	{
 		mHasGameStarted = true;
+
+		mRenderSystem.RemoveText(mButton1);
+		mRenderSystem.RemoveText(mButton2);
+		mRenderSystem.RemoveText(mActionText);
 	}
 }
 
