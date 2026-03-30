@@ -62,7 +62,6 @@ Game::Game(const LLGL::Extent2D screenSize, const LLGL::UTF8String& title,
 
 void Game::Run()
 {
-	//mRenderContext->SetBackgroundClearColor({ 0.1f, 0.1f, 0.1f });
 	mRenderSystem->LoadFont("afternight.ttf");
 	mSceneManager->LoadScene("kittypong.json");
 
