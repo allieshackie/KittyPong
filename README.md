@@ -18,9 +18,9 @@ For Player vs Player, use W and S for left paddle and Up arrow Down arrow for ri
 
 ## Screenshots
 
-![](/Data/Assets/Images/MainMenu.PNG)
+![](Data/Assets/Textures/MainMenu.PNG)
 
-![](/Data/Assets/Images/InGame.PNG)
+![](Data/Assets/Textures/InGame.PNG)
 
 
 Copyright (C) 2020, Alexandrea Shackelford. All Rights Reserved.
